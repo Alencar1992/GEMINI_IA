@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🏍💨ALENCAR FRETES</title>
-    <link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Alencar Fretes">
-<link rel="apple-touch-icon" href="ícone-192.png">
+    <title>🏍💨 ALENCAR FRETES</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <style>
@@ -17,112 +12,79 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
                margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* Cabeçalho */
+        /* Cabeçalho Ajustado */
         .header-top {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
+            gap: 15px;
+            padding: 10px 20px;
             background: var(--card);
             border-bottom: 2px solid var(--accent);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .logo-container img { height: 50px; border-radius: 8px; }
-        .header-title h1 { margin: 0; font-size: 1.1em; color: var(--accent); }
+        .logo-container img { height: 45px; width: 45px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
+        .header-title h1 { margin: 0; font-size: 1.2em; color: #ffffff; letter-spacing: 1px; }
 
-        #map { height: 28vh; width: 100%; border-bottom: 2px solid var(--accent); }
+        #map { height: 25vh; width: 100%; border-bottom: 2px solid var(--accent); }
 
         .leaflet-routing-container { display: none !important; }
 
-        /* Container com espaçamento aprimorado */
         .container { 
-            padding: 25px 20px; 
+            padding: 20px; 
             display: flex; 
             flex-direction: column; 
-            gap: 20px; /* Aumentado para dar mais "ar" entre os blocos */
+            gap: 15px;
             max-width: 600px;
             margin: 0 auto;
         }
         
-        /* Estilo 3D para Inputs */
         input { 
             background: #222; 
             border: 1px solid #444; 
             color: white; 
-            padding: 14px; 
+            padding: 12px; 
             border-radius: 8px; 
             font-size: 16px; 
-            outline: none; 
             width: 100%; 
             box-sizing: border-box;
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 2px rgba(255,255,255,0.1);
-            margin-top: 5px; /* Espaço entre o label e o input */
+            margin-top: 5px;
         }
 
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
-        /* Grupo de Input para organizar labels */
-        .input-group { display: flex; flex-direction: column; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 12px; }
 
-        /* Botões 3D */
         button { 
-            padding: 16px; 
+            padding: 15px; 
             border-radius: 8px; 
             border: none; 
             font-weight: bold; 
             cursor: pointer; 
             text-transform: uppercase;
             transition: all 0.1s;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.4);
-            position: relative;
-        }
-        button:active {
-            transform: translateY(4px);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.4);
         }
 
-        .btn-calc { background: var(--azul-marinho); color: white; box-shadow: 0 5px 0 #001021; }
-        .btn-clear { background: #444; color: white; box-shadow: 0 5px 0 #222; }
+        .btn-calc { background: var(--azul-marinho); color: white; box-shadow: 0 4px 0 #001021; }
+        .btn-clear { background: #444; color: white; box-shadow: 0 4px 0 #222; }
         .btn-confirm { 
             background: #25d366; 
             color: white; 
-            font-size: 18px; 
+            font-size: 16px; 
             margin-top: 10px;
-            box-shadow: 0 6px 0 #128c7e;
+            box-shadow: 0 5px 0 #128c7e;
         }
 
-        /* Resumo */
         .resumo { 
             background: var(--card); 
-            padding: 18px; 
+            padding: 15px; 
             border-radius: 12px; 
             border: 1px solid #333;
-            box-shadow: 4px 4px 15px rgba(0,0,0,0.8);
-            margin-top: 5px;
         }
         
-        .valor-final { 
-            font-size: 2em; 
-            font-weight: 900; 
-            color: var(--verde-frete); 
-            text-align: right; 
-            text-shadow: 1px 1px 2px black;
-        }
-        
-        .distancia-texto { font-size: 1em; color: #aaa; }
-        label { font-size: 0.8em; color: var(--accent); margin-left: 2px; font-weight: bold; text-transform: uppercase; }
+        .valor-final { font-size: 1.8em; font-weight: 900; color: var(--verde-frete); }
+        .distancia-texto { font-size: 0.9em; color: #aaa; }
+        label { font-size: 0.75em; color: var(--accent); font-weight: bold; text-transform: uppercase; }
 
-        /* Modal 3D */
-        #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        .msg-box { 
-            background: #1a1a1a; 
-            padding: 35px; 
-            border-radius: 20px; 
-            border: 1px solid #444; 
-            max-width: 320px; 
-            box-shadow: 10px 10px 40px rgba(0,0,0,1);
-            text-align: center;
-        }
+        #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        .msg-box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 80%; }
     </style>
 </head>
 <body>
@@ -133,49 +95,46 @@
     </div>
     <div class="header-title">
         <h1>ALENCAR FRETES</h1>
-        <div style="font-size: 0.6em; color: #0025fa; text-align: right;">ALENCAR EXPRESS</div>
     </div>
 </div>
 
 <div id="avisoLucas">
     <div class="msg-box">
-        <h2 style="color: var(--accent); margin-top: 0;">Confirmar Envio?</h2>
-        <p>Aguarde a confirmação do Lucas após o envio da mensagem.</p>
-        <button class="btn-ok" style="background:#25d366; color:white; width:100%; box-shadow: 0 5px 0 #128c7e;" onclick="finalizarEnvio()">OK, ENVIAR AGORA</button>
-        <button class="btn-cancel" style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:15px; width:100%; box-shadow:none;" onclick="document.getElementById('avisoLucas').style.display='none'">CORRIGIR DADOS</button>
+        <h2 style="color: var(--accent);">Confirmar Envio?</h2>
+        <p>A mensagem será enviada para o Lucas via WhatsApp.</p>
+        <button style="background:#25d366; color:white; width:100%;" onclick="finalizarEnvio()">OK, ENVIAR</button>
+        <button style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:15px; width:100%;" onclick="document.getElementById('avisoLucas').style.display='none'">CANCELAR</button>
     </div>
 </div>
 
 <div id="map"></div>
 
 <div class="container">
-    <div style="font-size: 0.85em; color:#888; margin-bottom: -10px;">📍 Origem: Av. João Dias, 2074</div>
-    
     <div class="input-group">
         <div class="row">
             <div>
-                <label>Data *</label>
-                <input type="date" id="data_entrega" required>
+                <label>Data da Entrega *</label>
+                <input type="date" id="data_entrega">
             </div>
             <div>
-                <label>Horário *</label>
-                <input type="time" id="hora_entrega" required>
+                <label>Horário da Entrega *</label>
+                <input type="time" id="hora_entrega">
             </div>
         </div>
         
         <div>
-            <label>Destino *</label>
+            <label>Nome do Cliente *</label>
+            <input type="text" id="nome_cliente" placeholder="Nome completo">
+        </div>
+
+        <div>
+            <label>Endereço de Destino *</label>
             <input type="text" id="destino" placeholder="Rua, nº, Bairro...">
         </div>
         
         <div class="row">
             <button class="btn-clear" onclick="limpar()">Limpar</button>
-            <button class="btn-calc" onclick="buscarRota()">Calcular FRETE</button>
-        </div>
-
-        <div>
-            <label>Nome do Cliente *</label>
-            <input type="text" id="nome_recebe" placeholder="Quem vai receber?">
+            <button class="btn-calc" onclick="buscarRota()">Calcular Rota</button>
         </div>
 
         <div class="row">
@@ -188,19 +147,11 @@
                 <input type="text" id="apto" placeholder="Ex: 12">
             </div>
         </div>
-        
-        <div>
-            <label>Complemento/Referência</label>
-            <input type="text" id="complemento" placeholder="Próximo ao mercado...">
-        </div>
     </div>
 
     <div class="resumo">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div class="distancia-texto">Distância: <span id="distancia" style="color: white; font-weight: bold;">0</span> km</div>
-                <div id="avisoTaxa" style="font-size: 0.75em; color: var(--accent); display: none; margin-top: 5px;">✅ Taxa mínima aplicada</div>
-            </div>
+            <div class="distancia-texto">Distância: <span id="distancia" style="color: white; font-weight: bold;">0</span> km</div>
             <div class="valor-final" id="valor">R$ 0,00</div>
         </div>
     </div>
@@ -217,12 +168,13 @@
     const ORIGEM_FIXA = L.latLng(-23.6355, -46.7237);
     const WHATSAPP_NUMERO = "5511981071822";
 
+    // Mapa com estilo padrão (Google/Standard)
     const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let control = L.Routing.control({
         waypoints: [ORIGEM_FIXA],
-        lineOptions: { styles: [{ color: '#ff9f43', weight: 6 }] },
+        lineOptions: { styles: [{ color: '#0025fa', weight: 6 }] },
         createMarker: (i, wp) => L.marker(wp.latLng),
         addWaypoints: false,
         show: false
@@ -235,32 +187,34 @@
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + " São Paulo")}`);
             const data = await resp.json();
             if(data.length > 0) {
-                const destCoords = L.latLng(data[0].lat, data[0].lon);
-                control.setWaypoints([ORIGEM_FIXA, destCoords]);
+                control.setWaypoints([ORIGEM_FIXA, L.latLng(data[0].lat, data[0].lon)]);
             } else { alert("Endereço não localizado."); }
         } catch (e) { alert("Erro ao buscar rota."); }
     }
 
     control.on('routesfound', function(e) {
         const km = e.routes[0].summary.totalDistance / 1000;
-        let valorCalculado = km * VALOR_POR_KM;
-        let valorFinal = km > 0 ? Math.max(TAXA_MINIMA, valorCalculado) : 0;
+        let valorFinal = Math.max(TAXA_MINIMA, km * VALOR_POR_KM);
         document.getElementById('distancia').innerText = km.toFixed(2);
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('avisoTaxa').style.display = (valorCalculado < TAXA_MINIMA && km > 0) ? 'block' : 'none';
         map.fitBounds(L.latLngBounds([ORIGEM_FIXA, e.routes[0].inputWaypoints[1].latLng]), {padding: [30, 30]});
     });
 
     function limpar() {
-        ['data_entrega','hora_entrega','destino','nome_recebe','bloco','apto','complemento'].forEach(id => document.getElementById(id).value = "");
+        ['data_entrega','hora_entrega','destino','nome_cliente','bloco','apto'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('distancia').innerText = "0";
         document.getElementById('valor').innerText = "R$ 0,00";
         control.setWaypoints([ORIGEM_FIXA]);
     }
 
     function prepararEnvio() {
-        if(!document.getElementById('data_entrega').value || !document.getElementById('hora_entrega').value || !document.getElementById('destino').value) {
-            return alert("Preencha os campos obrigatórios!");
+        const data = document.getElementById('data_entrega').value;
+        const hora = document.getElementById('hora_entrega').value;
+        const nome = document.getElementById('nome_cliente').value;
+        const dest = document.getElementById('destino').value;
+
+        if(!data || !hora || !nome || !dest) {
+            return alert("Por favor, preencha Data, Horário, Nome e Destino!");
         }
         document.getElementById('avisoLucas').style.display = 'flex';
     }
@@ -268,19 +222,22 @@
     function finalizarEnvio() {
         const dataE = document.getElementById('data_entrega').value.split('-').reverse().join('/');
         const horaE = document.getElementById('hora_entrega').value;
-        const dest = document.getElementById('destino').value;
-        const nome = document.getElementById('nome_recebe').value;
-        const bloco = document.getElementById('bloco').value;
-        const apto = document.getElementById('apto').value;
-        const comp = document.getElementById('complemento').value;
+        const nome = document.getElementById('nome_cliente').value;
+        const bloco = document.getElementById('bloco').value || "Não informado";
+        const apto = document.getElementById('apto').value || "Não informado";
         const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
+        const dest = document.getElementById('destino').value;
 
-        let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A📅 *Data:* ${dataE}%0A⏰ *Hora:* ${horaE}%0A👤 *Cliente:* ${nome}%0A🏁 *Destino:* ${dest}`;
-        if(bloco) msg += `%0A🏢 *Bloco:* ${bloco}`;
-        if(apto) msg += `%0A🚪 *Apto:* ${apto}`;
-        if(comp) msg += `%0A📝 *Ref:* ${comp}`;
-        msg += `%0A📏 *KM:* ${km} km%0A💰 *VALOR:* ${valor}`;
+        let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
+        msg += `📅 *DATA DA ENTREGA:* ${dataE}%0A`;
+        msg += `⏰ *HORÁRIO DA ENTREGA:* ${horaE}%0A`;
+        msg += `👤 *NOME DO CLIENTE:* ${nome}%0A`;
+        msg += `🏢 *BLOCO:* ${bloco}%0A`;
+        msg += `🚪 *APTO:* ${apto}%0A`;
+        msg += `🏁 *DESTINO:* ${dest}%0A`;
+        msg += `💰 *VALOR DA TAXA:* ${valor}%0A`;
+        msg += `📏 *KM:* ${km} km`;
         
         document.getElementById('avisoLucas').style.display = 'none';
         window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
