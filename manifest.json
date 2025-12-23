@@ -1,1 +1,17 @@
-
+{
+  "name": "🏍💨Alencar Fretes",
+  "short_name": "Alencar",
+  "description": "Entregas Alencar",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff9f43",
+  "icons": [
+    {
+      "src": "ícone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
