@@ -18,7 +18,15 @@
         .leaflet-routing-container { display: none !important; }
 
         .container { padding: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
-        .header { font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        .header { <div class="header-top">
+    <div class="logo-container">
+        <img src="ícone-512.png" alt="Logo Alencar Fretes">
+    </div>
+    <div class="header-title">
+        <h1>ALENCAR FRETES</h1>
+        <div style="font-size: 0.6em; color: #888;">LOGÍSTICA EXPRESSA</div>
+    </div>
+</div> }
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         input { background: var(--card); border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; }
         input:focus { border-color: var(--accent); }
