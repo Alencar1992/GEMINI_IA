@@ -23,6 +23,7 @@
         input { background: var(--card); border: 1px solid #333; color: white; padding: 12px; 
                 border-radius: 8px; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; }
         input:focus { border-color: var(--accent); }
+        input:required { border-left: 3px solid var(--accent); }
 
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
@@ -35,9 +36,8 @@
         .taxa-aviso { font-size: 0.8em; color: var(--accent); margin-top: 4px; display: none; font-weight: bold; }
         .valor-final { font-size: 1.5em; font-weight: bold; color: var(--accent); text-align: right; }
         .distancia-texto { font-size: 0.9em; color: #888; }
-        label { font-size: 0.75em; color: var(--accent); margin-left: 5px; }
+        label { font-size: 0.75em; color: var(--accent); margin-left: 5px; font-weight: bold; }
 
-        /* Estilo do Aviso de Confirmação */
         #avisoLucas {
             display: none;
             position: fixed;
@@ -50,7 +50,7 @@
             text-align: center;
             padding: 20px;
         }
-        .msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 300px; }
+        .msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 320px; }
         .btn-ok { background: #25d366; color: white; width: 100%; font-size: 18px; margin-top: 20px; padding: 15px; }
         .btn-cancel { background: transparent; color: #ff4444; border: 1px solid #ff4444; margin-top: 15px; width: 100%; padding: 10px; }
     </style>
@@ -59,12 +59,10 @@
 
 <div id="avisoLucas">
     <div class="msg-box">
-        <h2 style="color: var(--accent); margin-top: 0;">Quase lá! 🛵</h2>
-        <p>Ao clicar abaixo, o pedido será enviado para o WhatsApp do Lucas.</p>
-        <p style="font-size: 0.9em; color: #aaa;">Aguarde a confirmação dele após o envio.</p>
-        
+        <h2 style="color: var(--accent); margin-top: 0;">Confirmar Envio?</h2>
+        <p>Aguarde a confirmação do Lucas após o envio da mensagem.</p>
         <button class="btn-ok" onclick="finalizarEnvio()">OK, ENVIAR AGORA</button>
-        <button class="btn-cancel" onclick="document.getElementById('avisoLucas').style.display='none'">CANCELAR</button>
+        <button class="btn-cancel" onclick="document.getElementById('avisoLucas').style.display='none'">CORRIGIR DADOS</button>
     </div>
 </div>
 
@@ -76,16 +74,16 @@
     <div class="input-group">
         <div class="row">
             <div>
-                <label>DATA</label>
-                <input type="date" id="data_entrega">
+                <label>DATA DA ENTREGA *</label>
+                <input type="date" id="data_entrega" required>
             </div>
             <div>
-                <label>HORÁRIO</label>
-                <input type="time" id="hora_entrega">
+                <label>HORÁRIO *</label>
+                <input type="time" id="hora_entrega" required>
             </div>
         </div>
         
-        <label>DESTINO (Rua, nº, Bairro)</label>
+        <label>DESTINO (Rua, nº, Bairro) *</label>
         <input type="text" id="destino" placeholder="Onde será a entrega karla??">
         
         <div class="buttons-row row">
@@ -93,8 +91,8 @@
             <button class="btn-calc" onclick="buscarRota()">Calcular KM</button>
         </div>
 
-        <label>NOME DO DESTINATÁRIO</label>
-        <input type="text" id="nome_recebe" placeholder="Nome do Cliente?">
+        <label>NOME DO CLIENTE *</label>
+        <input type="text" id="nome_recebe" placeholder="Quem vai receber?" required>
 
         <label>APARTAMENTO? (Opcional)</label>
         <div class="row">
@@ -138,7 +136,7 @@
 
     async function buscarRota() {
         const dest = document.getElementById('destino').value;
-        if(!dest) return alert("Por favor, digite o endereço de destino.");
+        if(!dest) return alert("Karla, digite o endereço de destino para o cálculo.");
 
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + " São Paulo")}`);
@@ -162,27 +160,29 @@
     });
 
     function limpar() {
-        ['data_entrega','destino','nome_recebe','bloco','apto','complemento','hora_entrega'].forEach(id => document.getElementById(id).value = "");
+        ['data_entrega','hora_entrega','destino','nome_recebe','bloco','apto','complemento'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('distancia').innerText = "0";
         document.getElementById('valor').innerText = "R$ 0,00";
         document.getElementById('avisoTaxa').style.display = 'none';
         control.setWaypoints([ORIGEM_FIXA]);
     }
 
-    // Primeiro passo: Valida e abre o informativo na tela
     function prepararEnvio() {
         const dataE = document.getElementById('data_entrega').value;
-        const dest = document.getElementById('destino').value;
+        const horaE = document.getElementById('hora_entrega').value;
         const nome = document.getElementById('nome_recebe').value;
+        const dest = document.getElementById('destino').value;
         const km = document.getElementById('distancia').innerText;
         
-        if(!dataE) return alert("Karla, você esqueceu de informar a DATA!");
-        if(!dest || !nome || km === "0") return alert("Preencha o Nome, Destino e calcule a rota!");
+        // Validação de campos obrigatórios
+        if(!dataE) return alert("⚠ Karla, o campo DATA DA ENTREGA é obrigatório!");
+        if(!horaE) return alert("⚠ Karla, o campo HORÁRIO é obrigatório!");
+        if(!nome) return alert("⚠ Karla, o campo NOME DO CLIENTE é obrigatório!");
+        if(!dest || km === "0") return alert("⚠ Karla, você precisa calcular a rota antes de enviar!");
 
         document.getElementById('avisoLucas').style.display = 'flex';
     }
 
-    // Segundo passo: Envia de fato para o WhatsApp
     function finalizarEnvio() {
         const dataE = document.getElementById('data_entrega').value;
         const horaE = document.getElementById('hora_entrega').value;
@@ -194,10 +194,13 @@
         const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
 
+        // Formatação simples da data de AAAA-MM-DD para DD/MM/AAAA
+        const dataFormatada = dataE.split('-').reverse().join('/');
+
         let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A`;
-        msg += `📅 *Data:* ${dataE}%0A`;
-        if(horaE) msg += `⏰ *Horário:* ${horaE}%0A`;
-        msg += `👤 *Destinatário:* ${nome}%0A`;
+        msg += `📅 *Data da Entrega:* ${dataFormatada}%0A`;
+        msg += `⏰ *Horário:* ${horaE}%0A`;
+        msg += `👤 *Cliente:* ${nome}%0A`;
         msg += `📍 *Origem:* Av. João Dias, 2074%0A`;
         msg += `🏁 *Destino:* ${dest}%0A`;
         if(bloco) msg += `🏢 *Bloco:* ${bloco} `;
