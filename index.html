@@ -3,39 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calculadora de Entregas - Dark</title>
+    <title>Delivery Express - João Dias</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <style>
         :root { --accent: #ff9f43; --bg: #000000; --card: #1a1a1a; --text: #ffffff; }
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-               margin: 0; background: var(--bg); color: var(--text); overflow: hidden; }
+               margin: 0; background: var(--bg); color: var(--text); }
 
-        /* Mapa ocupa 40% da tela conforme solicitado */
-        #map { height: 40vh; width: 100%; border-bottom: 2px solid var(--accent); }
+        #map { height: 35vh; width: 100%; border-bottom: 2px solid var(--accent); }
 
-        .container { height: 60vh; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; }
+        .container { padding: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
 
         .header { font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
         
-        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
         
-        input { background: var(--card); border: 1px solid #333; color: white; padding: 15px; 
-                border-radius: 12px; font-size: 16px; outline: none; }
+        input, select { background: var(--card); border: 1px solid #333; color: white; padding: 12px; 
+                border-radius: 8px; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; }
         input:focus { border-color: var(--accent); }
 
-        .buttons-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        button { padding: 15px; border-radius: 12px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; }
+        button { padding: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
         .btn-calc { background: var(--accent); color: black; }
         .btn-clear { background: #333; color: white; }
-        .btn-confirm { background: #25d366; color: white; width: 100%; font-size: 16px; margin-top: auto; padding: 18px; }
+        .btn-confirm { background: #25d366; color: white; font-size: 16px; margin-top: 10px; }
 
-        .resumo { background: var(--card); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
-        .taxa-aviso { font-size: 0.8em; color: var(--accent); margin-top: 4px; display: none; }
-        .valor-final { font-size: 1.6em; font-weight: bold; color: var(--accent); }
+        .resumo { background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #222; margin-top: 5px; }
+        .taxa-aviso { font-size: 0.8em; color: var(--accent); margin-top: 4px; display: none; font-weight: bold; }
+        .valor-final { font-size: 1.5em; font-weight: bold; color: var(--accent); text-align: right; }
         .distancia-texto { font-size: 0.9em; color: #888; }
+        label { font-size: 0.75em; color: var(--accent); margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -46,22 +46,39 @@
     <div class="header">📍 Origem: Av. João Dias, 2074</div>
     
     <div class="input-group">
-        <input type="text" id="destino" placeholder="Para onde vamos? (Rua, nº, Cidade)">
-        <div class="buttons-row">
+        <label>DATA DA ENTREGA</label>
+        <input type="date" id="data_entrega">
+        
+        <label>DESTINO (Rua, nº, Bairro)</label>
+        <input type="text" id="destino" placeholder="Para onde vamos?">
+        
+        <div class="buttons-row row">
             <button class="btn-clear" onclick="limpar()">Limpar</button>
-            <button class="btn-calc" onclick="buscarRota()">Calcular</button>
+            <button class="btn-calc" onclick="buscarRota()">Calcular KM</button>
         </div>
+
+        <label>NOME DO DESTINATÁRIO</label>
+        <input type="text" id="nome_recebe" placeholder="Quem recebe?">
+
+        <label>APARTAMENTO? (Opcional)</label>
+        <div class="row">
+            <input type="text" id="bloco" placeholder="Bloco">
+            <input type="text" id="apto" placeholder="Apto">
+        </div>
+        <input type="text" id="complemento" placeholder="Ponto de referência / Complemento">
     </div>
 
     <div class="resumo">
-        <div>
-            <div class="distancia-texto">Distância: <span id="distancia">0</span> km</div>
-            <div id="avisoTaxa" class="taxa-aviso">✅ Taxa mínima de R$ 5,00 aplicada</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div class="distancia-texto">Distância: <span id="distancia">0</span> km</div>
+                <div id="avisoTaxa" class="taxa-aviso">✅ Taxa mínima de R$ 5,00 aplicada</div>
+            </div>
+            <div class="valor-final" id="valor">R$ 5,00</div>
         </div>
-        <div class="valor-final" id="valor">R$ 5,00</div>
     </div>
 
-    <button class="btn-confirm" onclick="enviarWhatsApp()">Confirmar Entrega</button>
+    <button class="btn-confirm" onclick="enviarWhatsApp()">CONFIRMAR E ENVIAR PEDIDO</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -71,24 +88,24 @@
     const TAXA_MINIMA = 5.00;
     const VALOR_POR_KM = 1.90;
     const ORIGEM_FIXA = L.latLng(-23.6355, -46.7237);
-    const WHATSAPP_NUMERO = "5511981071822"; // SEU NÚMERO CONFIGURADO
+    const WHATSAPP_NUMERO = "5511981071822";
 
-    // Mapa com estilo dark
     const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
     let control = L.Routing.control({
         waypoints: [ORIGEM_FIXA],
         lineOptions: { styles: [{ color: '#ff9f43', weight: 6 }] },
-        createMarker: (i, wp) => L.marker(wp.latLng, {draggable: false}),
+        createMarker: (i, wp) => L.marker(wp.latLng),
         addWaypoints: false
     }).addTo(map);
 
+    // Ajusta data para hoje por padrão
+    document.getElementById('data_entrega').valueAsDate = new Date();
+
     async function buscarRota() {
         const dest = document.getElementById('destino').value;
-        if(!dest) return alert("Por favor, digite o destino.");
+        if(!dest) return alert("Por favor, digite o endereço de destino.");
 
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + " São Paulo")}`);
@@ -97,47 +114,53 @@
                 const destCoords = L.latLng(data[0].lat, data[0].lon);
                 control.setWaypoints([ORIGEM_FIXA, destCoords]);
             } else { alert("Endereço não localizado."); }
-        } catch (e) { alert("Erro ao conectar com o servidor de mapas."); }
+        } catch (e) { alert("Erro ao buscar rota."); }
     }
 
     control.on('routesfound', function(e) {
         const km = e.routes[0].summary.totalDistance / 1000;
         let valorCalculado = km * VALOR_POR_KM;
-        
-        // Exibe o aviso se o valor for menor que a taxa mínima
         document.getElementById('avisoTaxa').style.display = valorCalculado < TAXA_MINIMA ? 'block' : 'none';
-        
         let valorFinal = Math.max(TAXA_MINIMA, valorCalculado);
-
         document.getElementById('distancia').innerText = km.toFixed(2);
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        
-        map.fitBounds(L.latLngBounds([ORIGEM_FIXA, e.routes[0].inputWaypoints[1].latLng]), {padding: [40, 40]});
+        map.fitBounds(L.latLngBounds([ORIGEM_FIXA, e.routes[0].inputWaypoints[1].latLng]), {padding: [30, 30]});
     });
 
     function limpar() {
-        document.getElementById('destino').value = "";
+        ['destino','nome_recebe','bloco','apto','complemento'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('distancia').innerText = "0";
         document.getElementById('valor').innerText = "R$ 5,00";
         document.getElementById('avisoTaxa').style.display = 'none';
         control.setWaypoints([ORIGEM_FIXA]);
-        map.setView(ORIGEM_FIXA, 15);
     }
 
     function enviarWhatsApp() {
+        const dataE = document.getElementById('data_entrega').value;
         const dest = document.getElementById('destino').value;
-        const valorTotal = document.getElementById('valor').innerText;
+        const nome = document.getElementById('nome_recebe').value;
+        const bloco = document.getElementById('bloco').value;
+        const apto = document.getElementById('apto').value;
+        const comp = document.getElementById('complemento').value;
+        const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
         
-        if(!dest || km === "0") return alert("Primeiro calcule a rota!");
+        if(!dest || !nome || km === "0") return alert("Preencha o Nome, Destino e calcule a rota!");
 
-        const mensagem = `*NOVO PEDIDO DE ENTREGA*%0A%0A` +
-                         `📍 *De:* Av. João Dias, 2074%0A` +
-                         `🏁 *Para:* ${dest}%0A` +
-                         `📏 *Distância:* ${km} km%0A` +
-                         `💰 *Valor:* ${valorTotal}`;
+        let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A`;
+        msg += `📅 *Data:* ${dataE}%0A`;
+        msg += `👤 *Destinatário:* ${nome}%0A`;
+        msg += `📍 *Origem:* Av. João Dias, 2074%0A`;
+        msg += `🏁 *Destino:* ${dest}%0A`;
+        
+        if(bloco) msg += `🏢 *Bloco:* ${bloco} `;
+        if(apto) msg += `🚪 *Apto:* ${apto}%0A`;
+        if(comp) msg += `📝 *Ref:* ${comp}%0A`;
+        
+        msg += `%0A📏 *Distância:* ${km} km`;
+        msg += `%0A💰 *VALOR TOTAL:* ${valor}`;
 
-        window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${mensagem}`, '_blank');
+        window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
     }
 </script>
 
