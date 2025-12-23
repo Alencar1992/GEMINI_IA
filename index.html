@@ -12,44 +12,28 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
                margin: 0; background: var(--bg); color: var(--text); }
 
-        #map { height: 35vh; width: 100%; border-bottom: 2px solid var(--accent); }
+        #map { height: 35vh; width: 50%; border-bottom: 2px solid var(--accent); }
+
+        /* Esconde completamente qualquer painel de texto do roteamento que tente aparecer */
+        .leaflet-routing-container { display: none !important; }
 
         .container { padding: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
-
         .header { font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        
         .input-group { display: flex; flex-direction: column; gap: 8px; }
-        
-        input { background: var(--card); border: 1px solid #333; color: white; padding: 12px; 
-                border-radius: 8px; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; }
+        input { background: var(--card); border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; }
         input:focus { border-color: var(--accent); }
-        input:required { border-left: 3px solid var(--accent); }
-
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
         button { padding: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
         .btn-calc { background: var(--accent); color: black; }
         .btn-clear { background: #333; color: white; }
         .btn-confirm { background: #25d366; color: white; font-size: 16px; margin-top: 10px; }
-
         .resumo { background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #222; margin-top: 5px; }
         .taxa-aviso { font-size: 0.8em; color: var(--accent); margin-top: 4px; display: none; font-weight: bold; }
         .valor-final { font-size: 1.5em; font-weight: bold; color: var(--accent); text-align: right; }
         .distancia-texto { font-size: 0.9em; color: #888; }
         label { font-size: 0.75em; color: var(--accent); margin-left: 5px; font-weight: bold; }
 
-        #avisoLucas {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
+        #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         .msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 320px; }
         .btn-ok { background: #25d366; color: white; width: 100%; font-size: 18px; margin-top: 20px; padding: 15px; }
         .btn-cancel { background: transparent; color: #ff4444; border: 1px solid #ff4444; margin-top: 15px; width: 100%; padding: 10px; }
@@ -70,7 +54,6 @@
 
 <div class="container">
     <div class="header">📍 Origem: Av. João Dias, 2074</div>
-    
     <div class="input-group">
         <div class="row">
             <div>
@@ -78,22 +61,18 @@
                 <input type="date" id="data_entrega" required>
             </div>
             <div>
-                <label>HORÁRIO *</label>
+                <label>HORÁRIO DA ENTREGA*</label>
                 <input type="time" id="hora_entrega" required>
             </div>
         </div>
-        
         <label>DESTINO (Rua, nº, Bairro) *</label>
-        <input type="text" id="destino" placeholder="Onde será a entrega karla??">
-        
+        <input type="text" id="destino" placeholder="Onde será a entrega karla?">
         <div class="buttons-row row">
             <button class="btn-clear" onclick="limpar()">Limpar</button>
             <button class="btn-calc" onclick="buscarRota()">Calcular KM</button>
         </div>
-
         <label>NOME DO CLIENTE *</label>
         <input type="text" id="nome_recebe" placeholder="Quem vai receber?" required>
-
         <label>APARTAMENTO? (Opcional)</label>
         <div class="row">
             <input type="text" id="bloco" placeholder="Bloco">
@@ -101,7 +80,6 @@
         </div>
         <input type="text" id="complemento" placeholder="Ponto de referência / Complemento">
     </div>
-
     <div class="resumo">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -111,7 +89,6 @@
             <div class="valor-final" id="valor">R$ 0,00</div>
         </div>
     </div>
-
     <button class="btn-confirm" onclick="prepararEnvio()">ENVIAR PARA O LUCAS</button>
 </div>
 
@@ -131,13 +108,14 @@
         waypoints: [ORIGEM_FIXA],
         lineOptions: { styles: [{ color: '#ff9f43', weight: 6 }] },
         createMarker: (i, wp) => L.marker(wp.latLng),
-        addWaypoints: false
+        addWaypoints: false,
+        show: false, // DESATIVA O PAINEL DE INSTRUÇÕES (PASSO A PASSO)
+        collapsible: true // GARANTE QUE FIQUE RECOLHIDO
     }).addTo(map);
 
     async function buscarRota() {
         const dest = document.getElementById('destino').value;
         if(!dest) return alert("Karla, digite o endereço de destino para o cálculo.");
-
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + " São Paulo")}`);
             const data = await resp.json();
@@ -173,13 +151,10 @@
         const nome = document.getElementById('nome_recebe').value;
         const dest = document.getElementById('destino').value;
         const km = document.getElementById('distancia').innerText;
-        
-        // Validação de campos obrigatórios
         if(!dataE) return alert("⚠ Karla, o campo DATA DA ENTREGA é obrigatório!");
         if(!horaE) return alert("⚠ Karla, o campo HORÁRIO é obrigatório!");
         if(!nome) return alert("⚠ Karla, o campo NOME DO CLIENTE é obrigatório!");
         if(!dest || km === "0") return alert("⚠ Karla, você precisa calcular a rota antes de enviar!");
-
         document.getElementById('avisoLucas').style.display = 'flex';
     }
 
@@ -193,10 +168,7 @@
         const comp = document.getElementById('complemento').value;
         const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
-
-        // Formatação simples da data de AAAA-MM-DD para DD/MM/AAAA
         const dataFormatada = dataE.split('-').reverse().join('/');
-
         let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A`;
         msg += `📅 *Data da Entrega:* ${dataFormatada}%0A`;
         msg += `⏰ *Horário:* ${horaE}%0A`;
@@ -208,11 +180,9 @@
         if(comp) msg += `📝 *Ref:* ${comp}%0A`;
         msg += `%0A📏 *Distância:* ${km} km`;
         msg += `%0A💰 *VALOR TOTAL:* ${valor}`;
-
         document.getElementById('avisoLucas').style.display = 'none';
         window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
     }
 </script>
-
 </body>
 </html>
