@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Entrega Grátis</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .resultado { margin-top: 20px; padding: 15px; background: #e9f7ef; border-radius: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Calculadora de Entrega</h2>
+    <label>Distância da Entrega (KM):</label>
+    <input type="number" id="distancia" placeholder="Ex: 10.5" step="0.1">
+    
+    <button onclick="calcular()">Calcular Valor</button>
+
+    <div id="resultado" class="resultado">
+        <strong>Distância:</strong> <span id="resDist"></span> km<br>
+        <strong>Valor Total:</strong> <span id="resValor"></span>
+    </div>
+</div>
+
+<script>
+    function calcular() {
+        const km = parseFloat(document.getElementById('distancia').value);
+        const taxaMinima = 5.00;
+        const valorPorKm = 1.90;
+
+        if (isNaN(km) || km <= 0) {
+            alert("Por favor, insira uma distância válida.");
+            return;
+        }
+
+        // Lógica: Distância * 1.90, mas no mínimo 5.00
+        let calculo = km * valorPorKm;
+        let valorFinal = Math.max(taxaMinima, calculo);
+
+        // Exibir resultados
+        document.getElementById('resDist').innerText = km.toFixed(2);
+        document.getElementById('resValor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('resultado').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
