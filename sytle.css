@@ -1,0 +1,15 @@
+.logo-container img {
+    height: 60px; /* Define uma altura elegante para o topo */
+    width: auto;  /* Mantém a proporção da imagem */
+    border-radius: 5px; /* Deixa as pontas levemente arredondadas */
+    display: block;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--card);
+    border-bottom: 2px solid var(--accent);
+}
