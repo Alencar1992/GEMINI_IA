@@ -36,9 +36,36 @@
         .valor-final { font-size: 1.5em; font-weight: bold; color: var(--accent); text-align: right; }
         .distancia-texto { font-size: 0.9em; color: #888; }
         label { font-size: 0.75em; color: var(--accent); margin-left: 5px; }
+
+        /* Estilo do Aviso de Confirmação */
+        #avisoLucas {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+<div id="avisoLucas">
+    <div class="msg-box">
+        <h2 style="color: var(--accent); margin-top: 0;">Pedido Enviado! 🚀</h2>
+        <p>Aguarde a confirmação do <b>Motoboy Lucas</b> em seu WhatsApp.</p>
+        <div class="loader"></div>
+        <button onclick="document.getElementById('avisoLucas').style.display='none'" style="background: #444; color: white; margin-top: 10px;">Fechar Aviso</button>
+    </div>
+</div>
 
 <div id="map"></div>
 
@@ -127,14 +154,9 @@
     control.on('routesfound', function(e) {
         const km = e.routes[0].summary.totalDistance / 1000;
         let valorCalculado = km * VALOR_POR_KM;
-        
-        // Só mostra o aviso se o valor original for menor que 5.00
         const precisaTaxaMinima = valorCalculado < TAXA_MINIMA && valorCalculado > 0;
         document.getElementById('avisoTaxa').style.display = precisaTaxaMinima ? 'block' : 'none';
-        
-        // Se KM for 0 (limpo), mostra 0. Se não, aplica a lógica da taxa mínima
         let valorFinal = km > 0 ? Math.max(TAXA_MINIMA, valorCalculado) : 0;
-
         document.getElementById('distancia').innerText = km.toFixed(2);
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         map.fitBounds(L.latLngBounds([ORIGEM_FIXA, e.routes[0].inputWaypoints[1].latLng]), {padding: [30, 30]});
@@ -168,15 +190,19 @@
         msg += `👤 *Destinatário:* ${nome}%0A`;
         msg += `📍 *Origem:* Av. João Dias, 2074%0A`;
         msg += `🏁 *Destino:* ${dest}%0A`;
-        
         if(bloco) msg += `🏢 *Bloco:* ${bloco} `;
         if(apto) msg += `🚪 *Apto:* ${apto}%0A`;
         if(comp) msg += `📝 *Ref:* ${comp}%0A`;
-        
         msg += `%0A📏 *Distância:* ${km} km`;
         msg += `%0A💰 *VALOR TOTAL:* ${valor}`;
 
-        window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
+        // Mostra o aviso na tela antes de abrir o WhatsApp
+        document.getElementById('avisoLucas').style.display = 'flex';
+
+        // Abre o WhatsApp após um pequeno atraso para que a Karla veja o aviso
+        setTimeout(() => {
+            window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
+        }, 500);
     }
 </script>
 
