@@ -10,14 +10,14 @@
         :root { --accent: #ff9f43; --bg: #000000; --card: #1a1a1a; --text: #ffffff; --azul-marinho: #001f3f; --verde-frete: #2ecc71; }
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-               margin: 0; background: var(--bg); color: var(--text); }
+               margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* Cabeçalho Corrigido */
+        /* Cabeçalho */
         .header-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 20px;
+            padding: 12px 20px;
             background: var(--card);
             border-bottom: 2px solid var(--accent);
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -25,31 +25,43 @@
         .logo-container img { height: 50px; border-radius: 8px; }
         .header-title h1 { margin: 0; font-size: 1.1em; color: var(--accent); }
 
-        #map { height: 30vh; width: 100%; border-bottom: 2px solid var(--accent); }
+        #map { height: 28vh; width: 100%; border-bottom: 2px solid var(--accent); }
 
         .leaflet-routing-container { display: none !important; }
 
-        .container { padding: 20px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 40px; }
+        /* Container com espaçamento aprimorado */
+        .container { 
+            padding: 25px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; /* Aumentado para dar mais "ar" entre os blocos */
+            max-width: 600px;
+            margin: 0 auto;
+        }
         
         /* Estilo 3D para Inputs */
         input { 
             background: #222; 
             border: 1px solid #444; 
             color: white; 
-            padding: 12px; 
+            padding: 14px; 
             border-radius: 8px; 
-            font-size: 15px; 
+            font-size: 16px; 
             outline: none; 
             width: 100%; 
             box-sizing: border-box;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 2px rgba(255,255,255,0.1);
+            margin-top: 5px; /* Espaço entre o label e o input */
         }
 
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        /* Efeito 3D Geral nos Botões */
+        /* Grupo de Input para organizar labels */
+        .input-group { display: flex; flex-direction: column; gap: 15px; }
+
+        /* Botões 3D */
         button { 
-            padding: 14px; 
+            padding: 16px; 
             border-radius: 8px; 
             border: none; 
             font-weight: bold; 
@@ -64,57 +76,48 @@
             box-shadow: 0 1px 0 rgba(0,0,0,0.4);
         }
 
-        /* Cores Específicas */
-        .btn-calc { 
-            background: var(--azul-marinho); 
-            color: white; 
-            box-shadow: 0 5px 0 #001021;
-        }
+        .btn-calc { background: var(--azul-marinho); color: white; box-shadow: 0 5px 0 #001021; }
         .btn-clear { background: #444; color: white; box-shadow: 0 5px 0 #222; }
-        
         .btn-confirm { 
             background: #25d366; 
             color: white; 
-            font-size: 16px; 
+            font-size: 18px; 
             margin-top: 10px;
-            box-shadow: 0 5px 0 #128c7e;
+            box-shadow: 0 6px 0 #128c7e;
         }
 
-        /* Resumo e Valor */
+        /* Resumo */
         .resumo { 
             background: var(--card); 
-            padding: 15px; 
+            padding: 18px; 
             border-radius: 12px; 
             border: 1px solid #333;
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.8);
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.8);
+            margin-top: 5px;
         }
-        .taxa-aviso { font-size: 0.8em; color: var(--accent); margin-top: 4px; display: none; font-weight: bold; }
         
-        /* Valor do Frete em Verde e Negrito */
         .valor-final { 
-            font-size: 1.8em; 
+            font-size: 2em; 
             font-weight: 900; 
             color: var(--verde-frete); 
             text-align: right; 
             text-shadow: 1px 1px 2px black;
         }
         
-        .distancia-texto { font-size: 0.9em; color: #888; }
-        label { font-size: 0.75em; color: var(--accent); margin-left: 5px; font-weight: bold; }
+        .distancia-texto { font-size: 1em; color: #aaa; }
+        label { font-size: 0.8em; color: var(--accent); margin-left: 2px; font-weight: bold; text-transform: uppercase; }
 
-        /* Caixa de Diálogo 3D */
+        /* Modal 3D */
         #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
         .msg-box { 
             background: #1a1a1a; 
-            padding: 30px; 
+            padding: 35px; 
             border-radius: 20px; 
             border: 1px solid #444; 
             max-width: 320px; 
-            box-shadow: 10px 10px 30px rgba(0,0,0,1);
+            box-shadow: 10px 10px 40px rgba(0,0,0,1);
             text-align: center;
         }
-        .btn-ok { background: #25d366; color: white; width: 100%; margin-top: 20px; box-shadow: 0 5px 0 #128c7e; }
-        .btn-cancel { background: transparent; color: #ff4444; border: 1px solid #ff4444; margin-top: 15px; width: 100%; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -125,7 +128,7 @@
     </div>
     <div class="header-title">
         <h1>ALENCAR FRETES</h1>
-        <div style="font-size: 0.6em; color: #888;">LOGÍSTICA EXPRESSA</div>
+        <div style="font-size: 0.6em; color: #888; text-align: right;">LOGÍSTICA EXPRESSA</div>
     </div>
 </div>
 
@@ -133,52 +136,65 @@
     <div class="msg-box">
         <h2 style="color: var(--accent); margin-top: 0;">Confirmar Envio?</h2>
         <p>Aguarde a confirmação do Lucas após o envio da mensagem.</p>
-        <button class="btn-ok" onclick="finalizarEnvio()">OK, ENVIAR AGORA</button>
-        <button class="btn-cancel" onclick="document.getElementById('avisoLucas').style.display='none'">CORRIGIR DADOS</button>
+        <button class="btn-ok" style="background:#25d366; color:white; width:100%; box-shadow: 0 5px 0 #128c7e;" onclick="finalizarEnvio()">OK, ENVIAR AGORA</button>
+        <button class="btn-cancel" style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:15px; width:100%; box-shadow:none;" onclick="document.getElementById('avisoLucas').style.display='none'">CORRIGIR DADOS</button>
     </div>
 </div>
 
 <div id="map"></div>
 
 <div class="container">
-    <div class="header-info" style="font-size: 0.8em; color:#aaa;">📍 Origem: Av. João Dias, 2074</div>
+    <div style="font-size: 0.85em; color:#888; margin-bottom: -10px;">📍 Origem: Av. João Dias, 2074</div>
     
     <div class="input-group">
         <div class="row">
             <div>
-                <label>DATA DA ENTREGA *</label>
+                <label>Data *</label>
                 <input type="date" id="data_entrega" required>
             </div>
             <div>
-                <label>HORÁRIO *</label>
+                <label>Horário *</label>
                 <input type="time" id="hora_entrega" required>
             </div>
         </div>
         
-        <label>DESTINO (Rua, nº, Bairro) *</label>
-        <input type="text" id="destino" placeholder="Onde será a entrega karla?">
+        <div>
+            <label>Destino *</label>
+            <input type="text" id="destino" placeholder="Rua, nº, Bairro...">
+        </div>
         
-        <div class="buttons-row row">
+        <div class="row">
             <button class="btn-clear" onclick="limpar()">Limpar</button>
             <button class="btn-calc" onclick="buscarRota()">Calcular KM</button>
         </div>
 
-        <label>NOME DO CLIENTE *</label>
-        <input type="text" id="nome_recebe" placeholder="Quem vai receber?">
-
-        <label>APARTAMENTO? (Opcional)</label>
-        <div class="row">
-            <input type="text" id="bloco" placeholder="Bloco">
-            <input type="text" id="apto" placeholder="Apto">
+        <div>
+            <label>Nome do Cliente *</label>
+            <input type="text" id="nome_recebe" placeholder="Quem vai receber?">
         </div>
-        <input type="text" id="complemento" placeholder="Ponto de referência / Complemento">
+
+        <div class="row">
+            <div>
+                <label>Bloco</label>
+                <input type="text" id="bloco" placeholder="Ex: B">
+            </div>
+            <div>
+                <label>Apto</label>
+                <input type="text" id="apto" placeholder="Ex: 12">
+            </div>
+        </div>
+        
+        <div>
+            <label>Complemento/Referência</label>
+            <input type="text" id="complemento" placeholder="Próximo ao mercado...">
+        </div>
     </div>
 
     <div class="resumo">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <div class="distancia-texto">Distância: <span id="distancia">0</span> km</div>
-                <div id="avisoTaxa" class="taxa-aviso">✅ Taxa mínima aplicada</div>
+                <div class="distancia-texto">Distância: <span id="distancia" style="color: white; font-weight: bold;">0</span> km</div>
+                <div id="avisoTaxa" style="font-size: 0.75em; color: var(--accent); display: none; margin-top: 5px;">✅ Taxa mínima aplicada</div>
             </div>
             <div class="valor-final" id="valor">R$ 0,00</div>
         </div>
@@ -209,7 +225,7 @@
 
     async function buscarRota() {
         const dest = document.getElementById('destino').value;
-        if(!dest) return alert("Karla, digite o endereço.");
+        if(!dest) return alert("Por favor, digite o destino.");
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + " São Paulo")}`);
             const data = await resp.json();
@@ -249,10 +265,17 @@
         const horaE = document.getElementById('hora_entrega').value;
         const dest = document.getElementById('destino').value;
         const nome = document.getElementById('nome_recebe').value;
+        const bloco = document.getElementById('bloco').value;
+        const apto = document.getElementById('apto').value;
+        const comp = document.getElementById('complemento').value;
         const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
 
-        let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A📅 *Data:* ${dataE}%0A⏰ *Hora:* ${horaE}%0A👤 *Cliente:* ${nome}%0A🏁 *Destino:* ${dest}%0A📏 *KM:* ${km} km%0A💰 *VALOR:* ${valor}`;
+        let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A📅 *Data:* ${dataE}%0A⏰ *Hora:* ${horaE}%0A👤 *Cliente:* ${nome}%0A🏁 *Destino:* ${dest}`;
+        if(bloco) msg += `%0A🏢 *Bloco:* ${bloco}`;
+        if(apto) msg += `%0A🚪 *Apto:* ${apto}`;
+        if(comp) msg += `%0A📝 *Ref:* ${comp}`;
+        msg += `%0A📏 *KM:* ${km} km%0A💰 *VALOR:* ${valor}`;
         
         document.getElementById('avisoLucas').style.display = 'none';
         window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
