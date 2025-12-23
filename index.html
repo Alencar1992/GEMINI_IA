@@ -20,7 +20,7 @@
         
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         
-        input, select { background: var(--card); border: 1px solid #333; color: white; padding: 12px; 
+        input { background: var(--card); border: 1px solid #333; color: white; padding: 12px; 
                 border-radius: 8px; font-size: 15px; outline: none; width: 100%; box-sizing: border-box; }
         input:focus { border-color: var(--accent); }
 
@@ -46,11 +46,19 @@
     <div class="header">📍 Origem: Av. João Dias, 2074</div>
     
     <div class="input-group">
-        <label>DATA DA ENTREGA</label>
-        <input type="date" id="data_entrega">
+        <div class="row">
+            <div>
+                <label>DATA</label>
+                <input type="date" id="data_entrega">
+            </div>
+            <div>
+                <label>HORÁRIO</label>
+                <input type="time" id="hora_entrega">
+            </div>
+        </div>
         
         <label>DESTINO (Rua, nº, Bairro)</label>
-        <input type="text" id="destino" placeholder="Para onde vamos?">
+        <input type="text" id="destino" placeholder="Onde será a entrega karla??">
         
         <div class="buttons-row row">
             <button class="btn-clear" onclick="limpar()">Limpar</button>
@@ -58,7 +66,7 @@
         </div>
 
         <label>NOME DO DESTINATÁRIO</label>
-        <input type="text" id="nome_recebe" placeholder="Quem recebe?">
+        <input type="text" id="nome_recebe" placeholder="Nome do Cliente?">
 
         <label>APARTAMENTO? (Opcional)</label>
         <div class="row">
@@ -74,7 +82,7 @@
                 <div class="distancia-texto">Distância: <span id="distancia">0</span> km</div>
                 <div id="avisoTaxa" class="taxa-aviso">✅ Taxa mínima de R$ 5,00 aplicada</div>
             </div>
-            <div class="valor-final" id="valor">R$ 5,00</div>
+            <div class="valor-final" id="valor">R$ 0,00</div>
         </div>
     </div>
 
@@ -100,7 +108,6 @@
         addWaypoints: false
     }).addTo(map);
 
-    // Ajusta data para hoje por padrão
     document.getElementById('data_entrega').valueAsDate = new Date();
 
     async function buscarRota() {
@@ -120,23 +127,31 @@
     control.on('routesfound', function(e) {
         const km = e.routes[0].summary.totalDistance / 1000;
         let valorCalculado = km * VALOR_POR_KM;
-        document.getElementById('avisoTaxa').style.display = valorCalculado < TAXA_MINIMA ? 'block' : 'none';
-        let valorFinal = Math.max(TAXA_MINIMA, valorCalculado);
+        
+        // Só mostra o aviso se o valor original for menor que 5.00
+        const precisaTaxaMinima = valorCalculado < TAXA_MINIMA && valorCalculado > 0;
+        document.getElementById('avisoTaxa').style.display = precisaTaxaMinima ? 'block' : 'none';
+        
+        // Se KM for 0 (limpo), mostra 0. Se não, aplica a lógica da taxa mínima
+        let valorFinal = km > 0 ? Math.max(TAXA_MINIMA, valorCalculado) : 0;
+
         document.getElementById('distancia').innerText = km.toFixed(2);
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         map.fitBounds(L.latLngBounds([ORIGEM_FIXA, e.routes[0].inputWaypoints[1].latLng]), {padding: [30, 30]});
     });
 
     function limpar() {
-        ['destino','nome_recebe','bloco','apto','complemento'].forEach(id => document.getElementById(id).value = "");
+        ['destino','nome_recebe','bloco','apto','complemento','hora_entrega'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('distancia').innerText = "0";
-        document.getElementById('valor').innerText = "R$ 5,00";
+        document.getElementById('valor').innerText = "R$ 0,00";
         document.getElementById('avisoTaxa').style.display = 'none';
         control.setWaypoints([ORIGEM_FIXA]);
+        map.setView(ORIGEM_FIXA, 15);
     }
 
     function enviarWhatsApp() {
         const dataE = document.getElementById('data_entrega').value;
+        const horaE = document.getElementById('hora_entrega').value;
         const dest = document.getElementById('destino').value;
         const nome = document.getElementById('nome_recebe').value;
         const bloco = document.getElementById('bloco').value;
@@ -149,6 +164,7 @@
 
         let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A`;
         msg += `📅 *Data:* ${dataE}%0A`;
+        if(horaE) msg += `⏰ *Horário:* ${horaE}%0A`;
         msg += `👤 *Destinatário:* ${nome}%0A`;
         msg += `📍 *Origem:* Av. João Dias, 2074%0A`;
         msg += `🏁 *Destino:* ${dest}%0A`;
