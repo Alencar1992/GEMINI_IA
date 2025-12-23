@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> 🏍💨ALENCAR FRETES</title>
+    <title>Delivery Express - João Dias</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <style>
@@ -42,28 +42,29 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             z-index: 9999;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 20px;
-            box-sizing: border-box;
         }
-        .msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 300px; }
+        .btn-ok { background: #25d366; color: white; width: 100%; font-size: 18px; margin-top: 20px; padding: 15px; }
+        .btn-cancel { background: transparent; color: #ff4444; border: 1px solid #ff4444; margin-top: 15px; width: 100%; padding: 10px; }
     </style>
 </head>
 <body>
 
 <div id="avisoLucas">
     <div class="msg-box">
-        <h2 style="color: var(--accent); margin-top: 0;">Pedido Enviado! 🚀</h2>
-        <p>Aguarde a confirmação do <b>Motoboy Lucas</b> em seu WhatsApp.</p>
-        <div class="loader"></div>
-        <button onclick="document.getElementById('avisoLucas').style.display='none'" style="background: #444; color: white; margin-top: 10px;">Fechar Aviso</button>
+        <h2 style="color: var(--accent); margin-top: 0;">Quase lá! 🛵</h2>
+        <p>Ao clicar abaixo, o pedido será enviado para o WhatsApp do Lucas.</p>
+        <p style="font-size: 0.9em; color: #aaa;">Aguarde a confirmação dele após o envio.</p>
+        
+        <button class="btn-ok" onclick="finalizarEnvio()">OK, ENVIAR AGORA</button>
+        <button class="btn-cancel" onclick="document.getElementById('avisoLucas').style.display='none'">CANCELAR</button>
     </div>
 </div>
 
@@ -113,7 +114,7 @@
         </div>
     </div>
 
-    <button class="btn-confirm" onclick="enviarWhatsApp()">ENVIAR PARA O LUCAS</button>
+    <button class="btn-confirm" onclick="prepararEnvio()">ENVIAR PARA O LUCAS</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -134,8 +135,6 @@
         createMarker: (i, wp) => L.marker(wp.latLng),
         addWaypoints: false
     }).addTo(map);
-
-    document.getElementById('data_entrega').valueAsDate = new Date();
 
     async function buscarRota() {
         const dest = document.getElementById('destino').value;
@@ -163,15 +162,28 @@
     });
 
     function limpar() {
-        ['destino','nome_recebe','bloco','apto','complemento','hora_entrega'].forEach(id => document.getElementById(id).value = "");
+        ['data_entrega','destino','nome_recebe','bloco','apto','complemento','hora_entrega'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('distancia').innerText = "0";
         document.getElementById('valor').innerText = "R$ 0,00";
         document.getElementById('avisoTaxa').style.display = 'none';
         control.setWaypoints([ORIGEM_FIXA]);
-        map.setView(ORIGEM_FIXA, 15);
     }
 
-    function enviarWhatsApp() {
+    // Primeiro passo: Valida e abre o informativo na tela
+    function prepararEnvio() {
+        const dataE = document.getElementById('data_entrega').value;
+        const dest = document.getElementById('destino').value;
+        const nome = document.getElementById('nome_recebe').value;
+        const km = document.getElementById('distancia').innerText;
+        
+        if(!dataE) return alert("Karla, você esqueceu de informar a DATA!");
+        if(!dest || !nome || km === "0") return alert("Preencha o Nome, Destino e calcule a rota!");
+
+        document.getElementById('avisoLucas').style.display = 'flex';
+    }
+
+    // Segundo passo: Envia de fato para o WhatsApp
+    function finalizarEnvio() {
         const dataE = document.getElementById('data_entrega').value;
         const horaE = document.getElementById('hora_entrega').value;
         const dest = document.getElementById('destino').value;
@@ -181,8 +193,6 @@
         const comp = document.getElementById('complemento').value;
         const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
-        
-        if(!dest || !nome || km === "0") return alert("Preencha o Nome, Destino e calcule a rota!");
 
         let msg = `*NOVO PEDIDO DE ENTREGA*%0A%0A`;
         msg += `📅 *Data:* ${dataE}%0A`;
@@ -196,13 +206,8 @@
         msg += `%0A📏 *Distância:* ${km} km`;
         msg += `%0A💰 *VALOR TOTAL:* ${valor}`;
 
-        // Mostra o aviso na tela antes de abrir o WhatsApp
-        document.getElementById('avisoLucas').style.display = 'flex';
-
-        // Abre o WhatsApp após um pequeno atraso para que a Karla veja o aviso
-        setTimeout(() => {
-            window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
-        }, 500);
+        document.getElementById('avisoLucas').style.display = 'none';
+        window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
     }
 </script>
 
