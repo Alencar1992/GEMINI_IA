@@ -1,6 +1,6 @@
 // Configurações de Preço
 const TAXA_MINIMA = 5.00;
-const VALOR_POR_KM = 1.90;
+const VALOR_POR_KM = 2.00;
 
 function calcularPreco(distanciaKm) {
     // Cálculo base
@@ -13,5 +13,5 @@ function calcularPreco(distanciaKm) {
     return valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-// Exemplo 1: 2km -> (2 * 1.90 = 3.80) -> Resultado: R$ 5,00 (Taxa Mínima)
-// Exemplo 2: 10km -> (10 * 1.90 = 19.00) -> Resultado: R$ 19,00
+// Exemplo 1: 2km -> (2 * 2.00 = 4.00) -> Resultado: R$ 5,00 (Taxa Mínima)
+// Exemplo 2: 10km -> (10 * 1.90 = 20.00) -> Resultado: R$ 20,00
