@@ -279,6 +279,9 @@
     }
 
     function finalizarEnvio() {
+        const bairro = document.getElementById('bairro_automatico').value; // Pega o bairro
+    const dest = document.getElementById('destino').value;
+    // ... (suas outras variáveis: data, hora, nome, etc)
         const dataRaw = document.getElementById('data_entrega').value;
         const dataFormatada = formatarDataCompleta(dataRaw);
         const horaE = document.getElementById('hora_entrega').value;
@@ -307,6 +310,7 @@
         }
         msg += `📍 *REF:* ${ref}%0A`;
         msg += `🏁 *DESTINO:* ${dest}%0A`;
+        msg += `🏘️ *BAIRRO:* ${bairro}%0A`; // <--- LINHA ADICIONADA
         msg += `📏 *DISTÂNCIA:* ${km} km%0A`;
         msg += `💰 *VALOR:* ${valor}`;
 
@@ -316,12 +320,15 @@
             hora: horaE,
             nome: nome,
             destino: dest,
+            bairro: bairro, // <--- ADICIONE ISSO TAMBÉM
             referencia: ref,
             tipo: tipoResidencia,
             bloco: bloco,
             apto: apto,
             km: km,
             valor: valor
+            
+    
         };
 
         enviarParaGoogleSheets(dadosPlanilha, msg);
