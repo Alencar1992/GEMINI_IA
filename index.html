@@ -168,7 +168,7 @@
     // =========================================================================
 
     const TAXA_MINIMA = 5.00;
-    const VALOR_POR_KM = 1.90;
+    const VALOR_POR_KM = 2.00;
     const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
     const WHATSAPP_NUMERO = "5511981071822";
 
@@ -260,7 +260,7 @@
         const ref = document.getElementById('ponto_referencia').value;
 
         if(!data || !hora || !nome || !dest || !ref) {
-            return alert("Por favor, preencha TODOS os campos obrigatórios.");
+            return alert("Por favor, preencha TODOS os campos obrigatórios*.");
         }
 
         if(tipoResidencia === 'apto') {
@@ -294,9 +294,9 @@
 
         // --- Mensagem WhatsApp ---
         let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
-        msg += `📅 *DATA:* ${dataFormatada}%0A`;
-        msg += `⏰ *HORA:* ${horaE}%0A`;
-        msg += `👤 *CLIENTE:* ${nome}%0A`;
+        msg += `📅 *DATA DA ENTREGA:* ${dataFormatada}%0A`;
+        msg += `⏰ *HORA PARA ENTREGAR:* ${horaE}%0A`;
+        msg += `👤 *CLIENTE RECEBEDOR:* ${nome}%0A`;
         msg += `🏠 *TIPO:* ${tipoResidencia.toUpperCase()}%0A`;
         if(tipoResidencia === 'apto') {
             msg += `🏢 *BLOCO:* ${bloco} | 🚪 *APTO:* ${apto}%0A`;
