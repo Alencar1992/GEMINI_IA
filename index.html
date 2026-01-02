@@ -13,7 +13,7 @@
             --card: #1a1a1a; 
             --text: #ffffff; 
             --verde-frete: #2ecc71; 
-            --azul-link: #3498db;
+            --azul-3d: #00d4ff;
         }
         
         body { 
@@ -21,7 +21,6 @@
             margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; 
         }
 
-        /* HEADER CENTRALIZADO */
         .header-top {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; background: var(--card); border-bottom: 3px solid var(--accent);
@@ -40,7 +39,6 @@
 
         .container { padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
         
-        /* TÍTULOS ESTILIZADOS */
         label { 
             font-size: 0.85em; color: var(--accent); font-weight: 800; 
             text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block;
@@ -49,39 +47,78 @@
         input { 
             background: #222; border: 1px solid #444; color: white; padding: 14px; 
             border-radius: 10px; font-size: 16px; width: 100%; box-sizing: border-box;
-            transition: border 0.3s;
         }
-        input:focus { border-color: var(--accent); outline: none; }
 
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .row-tri { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+        /* AJUSTE DATA E HORA SEPARADOS NO CELULAR */
+        .row-data-hora { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 25px; /* Aumentado o espaço entre data e hora */
+            margin-bottom: 10px;
+        }
+
+        .row-tri { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 10px;}
+
+        /* AJUSTE BOTÃO LIMPAR E CALCULAR */
+        .area-botoes { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            margin: 15px 0; /* Garante que não fique em cima do ponto de referência */
+        }
 
         button { 
             padding: 16px; border-radius: 10px; border: none; font-weight: 900; 
-            cursor: pointer; text-transform: uppercase; transition: all 0.2s; width: 100%;
+            cursor: pointer; text-transform: uppercase; width: 100%;
             letter-spacing: 1px;
         }
 
-        .btn-calc { background: var(--verde-frete); color: white; box-shadow: 0 4px 0 #27ae60; margin-top: 10px; }
-        .btn-calc:active { transform: translateY(4px); box-shadow: none; }
-        .btn-clear { background: #444; color: white; }
+        /* BOTÃO CALCULAR 3D */
+        .btn-calc { 
+            background: var(--verde-frete); 
+            color: white; 
+            box-shadow: 0 6px 0 #1e8449, 0 8px 15px rgba(0,0,0,0.4);
+            transform: translateY(-2px);
+            transition: all 0.2s;
+        }
+        .btn-calc:active { 
+            transform: translateY(4px); 
+            box-shadow: 0 2px 0 #1e8449; 
+        }
+
+        .btn-clear { background: #444; color: white; margin-top: 5px; }
         .btn-confirm { background: #25d366; color: white; font-size: 16px; margin-top: 20px; box-shadow: 0 5px 0 #128c7e; }
 
-        /* CARDS DE RESULTADO ESTILIZADOS */
+        /* CARDS DE RESULTADO 3D COM LUZ AZUL */
         #campo-resumo {
             display: none; 
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-            padding: 20px; border-radius: 20px; border: 1px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin: 10px 0;
+            background: #0a0a0a;
+            padding: 20px; border-radius: 20px; 
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            margin: 20px 0;
         }
 
-        .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card-info { 
-            background: rgba(255, 255, 255, 0.05); padding: 15px; 
-            border-radius: 15px; text-align: center; border: 1px solid #222;
+        .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
+        
+        .card-info-3d { 
+            background: #151515; 
+            padding: 15px; 
+            border-radius: 15px; 
+            border: 1px solid #222;
+            box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.2), 0 5px 15px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
         }
-        .card-info label { font-size: 10px; color: var(--accent); margin-bottom: 8px; }
-        .card-info span { font-size: 1.5em; font-weight: 900; color: #fff; display: block; }
+        /* Efeito de Luz Azul */
+        .card-info-3d::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .card-info-3d label { font-size: 10px; color: var(--azul-3d); margin-bottom: 8px; text-shadow: 0 0 5px rgba(0,212,255,0.5); }
+        .card-info-3d span { font-size: 1.5em; font-weight: 900; color: #fff; display: block; }
         .valor-destaque { color: var(--verde-frete) !important; font-size: 1.8em !important; }
         
         .info-bairro-tempo {
@@ -89,7 +126,7 @@
             display: flex; justify-content: space-around; font-size: 0.9em;
         }
         .info-item { text-align: center; }
-        .info-item i { color: var(--azul-link); display: block; font-style: normal; font-weight: bold; margin-bottom: 2px; }
+        .info-item b { color: var(--azul-3d); }
 
         #aviso-taxa {
             display: none; background: rgba(241, 196, 15, 0.1); color: #f1c40f;
@@ -97,11 +134,10 @@
             margin-top: 15px; font-size: 12px; font-weight: 900; text-align: center;
         }
 
-        /* MODAL */
         #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         .msg-box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 85%; }
         
-        .tipo-residencia { display: flex; gap: 10px; }
+        .tipo-residencia { display: flex; gap: 10px; margin-bottom: 10px; }
         .btn-tipo { background: #333; color: #888; border: 1px solid #444; padding: 10px; }
         .btn-tipo.active { background: var(--accent); color: black; font-weight: 900; }
         #dados-apto { display: none; }
@@ -118,48 +154,48 @@
 
 <div class="container">
     <div class="input-group">
-        <div class="row">
-            <div><label>Data da Entrega</label><input type="date" id="data_entrega"></div>
-            <div><label>Horário</label><input type="time" id="hora_entrega"></div>
+        <div class="row-data-hora">
+            <div><label>📅 Data da Entrega</label><input type="date" id="data_entrega"></div>
+            <div><label>⏰ Horário</label><input type="time" id="hora_entrega"></div>
         </div>
         
-        <div><label>Nome do Cliente</label><input type="text" id="nome_cliente" placeholder="Nome do destinatário"></div>
+        <div><label>👤 Nome do Cliente</label><input type="text" id="nome_cliente" placeholder="Nome do destinatário"></div>
         
         <div class="row-tri">
-            <div><label>Endereço (Rua/Av)</label><input type="text" id="destino" placeholder="Ex: Av. Paulista"></div>
-            <div><label>Número</label><input type="text" id="num_residencia" placeholder="123"></div>
+            <div><label>📍 Endereço (Rua/Av)</label><input type="text" id="destino" placeholder="Ex: Av. Paulista"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
         </div>
 
-        <div><label>Ponto de Referência</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao metrô"></div>
+        <div><label>🚩 Ponto de Referência</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao metrô"></div>
         
-        <div class="row">
-            <button class="btn-clear" onclick="limpar()">Limpar</button>
-            <button class="btn-calc" onclick="buscarRota()">CALCULAR FRETE</button>
+        <div class="area-botoes">
+            <button class="btn-calc" onclick="buscarRota()">🚀 CALCULAR FRETE</button>
+            <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
         </div>
 
         <div id="campo-resumo">
             <div class="resultado-grid">
-                <div class="card-info"><label>DISTÂNCIA</label><span id="distancia">0.00</span><small>KM</small></div>
-                <div class="card-info"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
+                <div class="card-info-3d"><label>DISTÂNCIA</label><span id="distancia">0.00</span><small>KM</small></div>
+                <div class="card-info-3d"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
             </div>
             
             <div class="info-bairro-tempo">
-                <div class="info-item"><i>🏘️ BAIRRO</i><b id="res-bairro">---</b></div>
-                <div class="info-item"><i>⏱️ TEMPO MÉDIO</i><b id="res-tempo">---</b></div>
+                <div class="info-item"><span>🏘️ BAIRRO</span><br><b id="res-bairro">---</b></div>
+                <div class="info-item"><span>⏱️ TEMPO</span><br><b id="res-tempo">---</b></div>
             </div>
 
-            <div id="aviso-taxa">⚠️TAXA MÍNIMA APLICADA✅</div>
+            <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
         </div>
 
         <div>
-            <label>Tipo de Local</label>
+            <label>🏠 Tipo de Local</label>
             <div class="tipo-residencia">
                 <button class="btn-tipo active" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
                 <button class="btn-tipo" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
             </div>
         </div>
 
-        <div class="row" id="dados-apto">
+        <div class="row-tri" id="dados-apto">
             <div><label>Bloco</label><input type="text" id="bloco" placeholder="B"></div>
             <div><label>Apto</label><input type="text" id="apto" placeholder="101"></div>
         </div>
@@ -184,7 +220,7 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvhHL4BiAecxAgumFmeFqmNhL62C87PSJ0zX1nIZTkB2tIDEz26y6SFbovQnh3B2oEHQ/exec"; 
     const TAXA_MINIMA = 5.00;
     const VALOR_POR_KM = 2.00;
-    const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933); // Av João Dias, 2074
+    const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
     const WHATSAPP_NUMERO = "5511981071822";
 
     let tipoResidencia = "casa"; 
@@ -195,7 +231,7 @@
 
     let control = L.Routing.control({
         waypoints: [ORIGEM_FIXA],
-        lineOptions: { styles: [{ color: '#ff9f43', weight: 6 }] },
+        lineOptions: { styles: [{ color: '#00d4ff', weight: 6 }] },
         createMarker: () => null, 
         addWaypoints: false,
         show: false
@@ -229,7 +265,7 @@
     control.on('routesfound', function(e) {
         const routes = e.routes[0];
         const km = routes.summary.totalDistance / 1000;
-        const tempoMinutos = Math.round(routes.summary.totalTime / 60) + 5; // +5min margem de trânsito
+        const tempoMinutos = Math.round(routes.summary.totalTime / 60) + 5;
         
         const calculoBase = km * VALOR_POR_KM;
         const valorFinal = Math.max(TAXA_MINIMA, calculoBase);
@@ -255,10 +291,23 @@
         document.getElementById('avisoLucas').style.display = 'flex';
     }
 
+    // FUNÇÃO PARA FORMATAR DATA COM DIA DA SEMANA
+    function obterDataFormatada(dataInput) {
+        if(!dataInput) return "---";
+        const partes = dataInput.split('-');
+        const data = new Date(partes[0], partes[1] - 1, partes[2]);
+        const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        return data.toLocaleDateString('pt-BR', opcoes).toUpperCase();
+    }
+
     function finalizarEnvio() {
+        const dataOriginal = document.getElementById('data_entrega').value;
+        const dataComDiaSema = obterDataFormatada(dataOriginal);
+        const horaE = document.getElementById('hora_entrega').value || "---";
+
         const dados = {
-            data: document.getElementById('data_entrega').value,
-            hora: document.getElementById('hora_entrega').value,
+            data: dataComDiaSema,
+            hora: horaE,
             nome: document.getElementById('nome_cliente').value,
             destino: document.getElementById('destino').value + ", " + document.getElementById('num_residencia').value,
             bairro: document.getElementById('res-bairro').innerText,
@@ -271,6 +320,8 @@
         };
 
         let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
+        msg += `📅 *DATA:* ${dados.data}%0A`;
+        msg += `⏰ *HORA:* ${dados.hora}%0A`;
         msg += `👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
         if(tipoResidencia === 'apto') msg += `🏢 *BLOCO:* ${dados.bloco} | 🚪 *APTO:* ${dados.apto}%0A`;
         msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
