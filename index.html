@@ -13,6 +13,7 @@
             --card: #1a1a1a; 
             --text: #ffffff; 
             --verde-frete: #2ecc71; 
+            --verde-dark: #1e8449;
             --azul-3d: #00d4ff;
         }
         
@@ -37,11 +38,11 @@
         #map { height: 25vh; width: 100%; border-bottom: 2px solid var(--accent); z-index: 1; }
         .leaflet-routing-container { display: none !important; }
 
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
         
         label { 
             font-size: 0.85em; color: var(--accent); font-weight: 800; 
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block;
         }
 
         input { 
@@ -49,45 +50,57 @@
             border-radius: 10px; font-size: 16px; width: 100%; box-sizing: border-box;
         }
 
-        /* AJUSTE DATA E HORA SEPARADOS NO CELULAR */
+        /* AJUSTE ESPAÇAMENTO DATA E HORA MOBILE */
         .row-data-hora { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 25px; /* Aumentado o espaço entre data e hora */
-            margin-bottom: 10px;
+            gap: 20px; 
+            margin-bottom: 5px;
         }
 
-        .row-tri { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 10px;}
+        /* GRID PARA ENDEREÇO, NÚMERO E BAIRRO */
+        .row-endereco { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .row-num-bairro { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; }
 
-        /* AJUSTE BOTÃO LIMPAR E CALCULAR */
         .area-botoes { 
             display: flex; 
             flex-direction: column; 
             gap: 15px; 
-            margin: 15px 0; /* Garante que não fique em cima do ponto de referência */
+            margin: 10px 0;
         }
 
         button { 
             padding: 16px; border-radius: 10px; border: none; font-weight: 900; 
             cursor: pointer; text-transform: uppercase; width: 100%;
-            letter-spacing: 1px;
+            letter-spacing: 1px; transition: all 0.2s;
         }
 
-        /* BOTÃO CALCULAR 3D */
-        .btn-calc { 
+        /* BOTÃO CALCULAR E TIPO LOCAL 3D VERDE */
+        .btn-3d-green { 
             background: var(--verde-frete); 
             color: white; 
-            box-shadow: 0 6px 0 #1e8449, 0 8px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 0 var(--verde-dark), 0 8px 15px rgba(0,0,0,0.4);
             transform: translateY(-2px);
-            transition: all 0.2s;
         }
-        .btn-calc:active { 
+        .btn-3d-green:active { 
             transform: translateY(4px); 
-            box-shadow: 0 2px 0 #1e8449; 
+            box-shadow: 0 2px 0 var(--verde-dark); 
         }
 
-        .btn-clear { background: #444; color: white; margin-top: 5px; }
-        .btn-confirm { background: #25d366; color: white; font-size: 16px; margin-top: 20px; box-shadow: 0 5px 0 #128c7e; }
+        /* BOTÕES CASA E APTO ESTILIZADOS */
+        .tipo-residencia { display: flex; gap: 15px; margin-top: 5px; }
+        .btn-tipo { 
+            background: #333; color: #fff; border: 1px solid #444; 
+            box-shadow: 0 4px 0 #111;
+        }
+        .btn-tipo.active { 
+            background: var(--verde-frete); 
+            color: white; 
+            box-shadow: 0 6px 0 var(--verde-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-clear { background: #444; color: white; margin-top: 5px; opacity: 0.8; }
 
         /* CARDS DE RESULTADO 3D COM LUZ AZUL */
         #campo-resumo {
@@ -96,7 +109,7 @@
             padding: 20px; border-radius: 20px; 
             border: 1px solid #333;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
         .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
@@ -108,25 +121,11 @@
             border: 1px solid #222;
             box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.2), 0 5px 15px rgba(0,0,0,0.5);
             position: relative;
-            overflow: hidden;
-        }
-        /* Efeito de Luz Azul */
-        .card-info-3d::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
-            pointer-events: none;
         }
 
         .card-info-3d label { font-size: 10px; color: var(--azul-3d); margin-bottom: 8px; text-shadow: 0 0 5px rgba(0,212,255,0.5); }
         .card-info-3d span { font-size: 1.5em; font-weight: 900; color: #fff; display: block; }
         .valor-destaque { color: var(--verde-frete) !important; font-size: 1.8em !important; }
-        
-        .info-bairro-tempo {
-            margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;
-            display: flex; justify-content: space-around; font-size: 0.9em;
-        }
-        .info-item { text-align: center; }
-        .info-item b { color: var(--azul-3d); }
 
         #aviso-taxa {
             display: none; background: rgba(241, 196, 15, 0.1); color: #f1c40f;
@@ -137,16 +136,13 @@
         #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         .msg-box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 85%; }
         
-        .tipo-residencia { display: flex; gap: 10px; margin-bottom: 10px; }
-        .btn-tipo { background: #333; color: #888; border: 1px solid #444; padding: 10px; }
-        .btn-tipo.active { background: var(--accent); color: black; font-weight: 900; }
-        #dados-apto { display: none; }
+        #dados-apto { display: none; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header-top">
-    <div class="logo-container"><img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" alt="Logo"></div>
+    <div class="logo-container"><img src="logo-cowboy-motofrete.png" alt="Logo"></div>
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
 </div>
 
@@ -155,21 +151,24 @@
 <div class="container">
     <div class="input-group">
         <div class="row-data-hora">
-            <div><label>📅 Data da Entrega</label><input type="date" id="data_entrega"></div>
-            <div><label>⏰ Horário</label><input type="time" id="hora_entrega"></div>
+            <div><label>📅 DATA</label><input type="date" id="data_entrega"></div>
+            <div><label>⏰ HORA</label><input type="time" id="hora_entrega"></div>
         </div>
         
-        <div><label>👤 Nome do Cliente</label><input type="text" id="nome_cliente" placeholder="Nome do destinatário"></div>
+        <div><label>👤 CLIENTE</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
         
-        <div class="row-tri">
-            <div><label>📍 Endereço (Rua/Av)</label><input type="text" id="destino" placeholder="Ex: Av. Paulista"></div>
-            <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
+        <div class="row-endereco">
+            <div><label>📍 RUA / AVENIDA</label><input type="text" id="destino" placeholder="Ex: Av. Paulista"></div>
+            <div class="row-num-bairro">
+                <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
+                <div><label>🏘️ BAIRRO</label><input type="text" id="bairro_automatico" placeholder="Automático" readonly style="color: var(--azul-3d); font-weight: bold;"></div>
+            </div>
         </div>
 
-        <div><label>🚩 Ponto de Referência</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao metrô"></div>
+        <div><label>🚩 PONTO DE REFERÊNCIA</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado"></div>
         
         <div class="area-botoes">
-            <button class="btn-calc" onclick="buscarRota()">🚀 CALCULAR FRETE</button>
+            <button class="btn-3d-green" onclick="buscarRota()">🚀 CALCULAR FRETE</button>
             <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
         </div>
 
@@ -178,38 +177,32 @@
                 <div class="card-info-3d"><label>DISTÂNCIA</label><span id="distancia">0.00</span><small>KM</small></div>
                 <div class="card-info-3d"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
             </div>
-            
-            <div class="info-bairro-tempo">
-                <div class="info-item"><span>🏘️ BAIRRO</span><br><b id="res-bairro">---</b></div>
-                <div class="info-item"><span>⏱️ TEMPO</span><br><b id="res-tempo">---</b></div>
-            </div>
-
             <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
         </div>
 
         <div>
-            <label>🏠 Tipo de Local</label>
+            <label>🏠 TIPO DE LOCAL</label>
             <div class="tipo-residencia">
-                <button class="btn-tipo active" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
+                <button class="btn-tipo btn-3d-green active" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
                 <button class="btn-tipo" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
             </div>
         </div>
 
-        <div class="row-tri" id="dados-apto">
-            <div><label>Bloco</label><input type="text" id="bloco" placeholder="B"></div>
-            <div><label>Apto</label><input type="text" id="apto" placeholder="101"></div>
+        <div class="row-data-hora" id="dados-apto">
+            <div><label>BLOCO</label><input type="text" id="bloco" placeholder="T1"></div>
+            <div><label>APTO</label><input type="text" id="apto" placeholder="610"></div>
         </div>
     </div>
 
-    <button class="btn-confirm" onclick="prepararEnvio()">📱 ENVIAR PEDIDO PARA O LUCAS</button>
+    <button class="btn-3d-green" style="background: #25d366; box-shadow: 0 6px 0 #128c7e; margin-top: 10px;" onclick="prepararEnvio()">📱 ENVIAR P/ WHATSAPP</button>
 </div>
 
 <div id="avisoLucas">
     <div class="msg-box">
         <h2 style="color: var(--accent); font-weight: 900;">CONFIRMAR?</h2>
-        <p>O pedido será registrado e o WhatsApp será aberto.</p>
-        <button style="background:#25d366; color:white; margin-top: 10px;" onclick="finalizarEnvio()">✅ SIM, ENVIAR</button>
-        <button style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:10px;" onclick="fecharModal()">CANCELAR</button>
+        <p>O pedido será registrado e o para o WhatsApp do LUCAS.</p>
+        <button class="btn-3d-green" style="margin-top: 10px;" onclick="finalizarEnvio()">✅ SIM, ENVIAR</button>
+        <button style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:15px;" onclick="fecharModal()">CANCELAR</button>
     </div>
 </div>
 
@@ -239,15 +232,24 @@
 
     function selecionarTipo(tipo) {
         tipoResidencia = tipo;
-        document.getElementById('btn-casa').classList.toggle('active', tipo === 'casa');
-        document.getElementById('btn-apto').classList.toggle('active', tipo === 'apto');
-        document.getElementById('dados-apto').style.display = (tipo === 'apto' ? 'grid' : 'none');
+        const btnCasa = document.getElementById('btn-casa');
+        const btnApto = document.getElementById('btn-apto');
+        
+        if(tipo === 'casa') {
+            btnCasa.classList.add('active', 'btn-3d-green');
+            btnApto.classList.remove('active', 'btn-3d-green');
+            document.getElementById('dados-apto').style.display = 'none';
+        } else {
+            btnApto.classList.add('active', 'btn-3d-green');
+            btnCasa.classList.remove('active', 'btn-3d-green');
+            document.getElementById('dados-apto').style.display = 'grid';
+        }
     }
 
     async function buscarRota() {
         const dest = document.getElementById('destino').value;
         const num = document.getElementById('num_residencia').value;
-        if(!dest || !num) return alert("Por favor, preencha o endereço e o número.");
+        if(!dest || !num) return alert("Preencha Rua e Número!");
         
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(dest + ", " + num + " São Paulo")}`);
@@ -255,8 +257,8 @@
             
             if(data.length > 0) {
                 const info = data[0].address;
-                const bairroDetectado = info.suburb || info.neighbourhood || info.village || "SÃO PAULO";
-                document.getElementById('res-bairro').innerText = bairroDetectado.toUpperCase();
+                const bairro = info.suburb || info.neighbourhood || info.village || "SÃO PAULO";
+                document.getElementById('bairro_automatico').value = bairro.toUpperCase();
                 control.setWaypoints([ORIGEM_FIXA, L.latLng(data[0].lat, data[0].lon)]);
             } else { alert("Endereço não localizado."); }
         } catch (e) { alert("Erro na busca."); }
@@ -265,13 +267,10 @@
     control.on('routesfound', function(e) {
         const routes = e.routes[0];
         const km = routes.summary.totalDistance / 1000;
-        const tempoMinutos = Math.round(routes.summary.totalTime / 60) + 5;
-        
         const calculoBase = km * VALOR_POR_KM;
         const valorFinal = Math.max(TAXA_MINIMA, calculoBase);
         
         document.getElementById('distancia').innerText = km.toFixed(2);
-        document.getElementById('res-tempo').innerText = tempoMinutos + " MIN";
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         
         document.getElementById('campo-resumo').style.display = 'block';
@@ -281,36 +280,30 @@
         map.fitBounds(routes.bounds, {padding: [30, 30]});
     });
 
-    function limpar() {
-        location.reload();
-    }
-
+    function limpar() { location.reload(); }
     function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
     function prepararEnvio() {
-        if (!rotaCalculada) return alert("Calcule o frete antes de enviar.");
+        if (!rotaCalculada) return alert("Calcule o frete antes!");
         document.getElementById('avisoLucas').style.display = 'flex';
     }
 
-    // FUNÇÃO PARA FORMATAR DATA COM DIA DA SEMANA
     function obterDataFormatada(dataInput) {
         if(!dataInput) return "---";
         const partes = dataInput.split('-');
         const data = new Date(partes[0], partes[1] - 1, partes[2]);
-        const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        return data.toLocaleDateString('pt-BR', opcoes).toUpperCase();
+        return data.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
     }
 
     function finalizarEnvio() {
-        const dataOriginal = document.getElementById('data_entrega').value;
-        const dataComDiaSema = obterDataFormatada(dataOriginal);
+        const dataFormatada = obterDataFormatada(document.getElementById('data_entrega').value);
         const horaE = document.getElementById('hora_entrega').value || "---";
 
         const dados = {
-            data: dataComDiaSema,
+            data: dataFormatada,
             hora: horaE,
             nome: document.getElementById('nome_cliente').value,
             destino: document.getElementById('destino').value + ", " + document.getElementById('num_residencia').value,
-            bairro: document.getElementById('res-bairro').innerText,
+            bairro: document.getElementById('bairro_automatico').value,
             ref: document.getElementById('ponto_referencia').value,
             km: document.getElementById('distancia').innerText,
             valor: document.getElementById('valor').innerText,
@@ -320,9 +313,7 @@
         };
 
         let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
-        msg += `📅 *DATA:* ${dados.data}%0A`;
-        msg += `⏰ *HORA:* ${dados.hora}%0A`;
-        msg += `👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
+        msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
         if(tipoResidencia === 'apto') msg += `🏢 *BLOCO:* ${dados.bloco} | 🚪 *APTO:* ${dados.apto}%0A`;
         msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
 
