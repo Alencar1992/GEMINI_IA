@@ -19,7 +19,7 @@
         .logo-container img { height: 45px; width: 45px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
         .header-title h1 { margin: 0; font-size: 1.2em; color: #ffffff; letter-spacing: 1px; }
 
-        #map { height: 25vh; width: 100%; border-bottom: 2px solid var(--accent); }
+        #map { height: 25vh; width: 100%; border-bottom: 2px solid var(--accent); z-index: 1; }
         .leaflet-routing-container { display: none !important; }
 
         .container { 
@@ -42,53 +42,64 @@
 
         .btn-calc { background: var(--verde-frete); color: white; box-shadow: 0 4px 0 #27ae60; }
         .btn-clear { background: #444; color: white; box-shadow: 0 4px 0 #222; }
-        .btn-confirm { 
-            background: #25d366; color: white; font-size: 16px; margin-top: 10px;
-            box-shadow: 0 5px 0 #128c7e;
+        .btn-confirm { background: #25d366; color: white; font-size: 16px; margin-top: 10px; box-shadow: 0 5px 0 #128c7e; }
+
+        /* NOVO DESIGN DOS RESULTADOS */
+        #campo-resumo {
+            display: none; 
+            background: linear-gradient(145deg, #1a1a1a, #000000);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--accent);
+            box-shadow: 0 4px 15px rgba(255, 159, 67, 0.2);
+            margin: 10px 0;
+        }
+
+        .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
+        .card-info { background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 10px; border: 1px solid #333; }
+        .card-info label { font-size: 10px; color: var(--accent); display: block; margin-bottom: 5px; letter-spacing: 1px; }
+        .card-info span { font-size: 1.3em; font-weight: bold; color: #fff; }
+        .valor-destaque { color: var(--verde-frete) !important; font-size: 1.6em !important; }
+
+        #aviso-taxa {
+            display: none;
+            background: rgba(241, 196, 15, 0.1);
+            color: #f1c40f;
+            border: 1px solid #f1c40f;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 1px;
         }
 
         .tipo-residencia { display: flex; gap: 10px; margin-top: 5px; }
-        .btn-tipo { background: #333; color: #888; border: 1px solid #444; box-shadow: none; }
+        .btn-tipo { background: #333; color: #888; border: 1px solid #444; }
         .btn-tipo.active { background: var(--azul-marinho); color: white; border: 1px solid var(--accent); }
 
-        .resumo { 
-            background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #333;
-        }
-        
-        .valor-final { font-size: 1.8em; font-weight: 900; color: var(--verde-frete); }
-        .distancia-texto { font-size: 0.9em; color: #aaa; }
-        label { font-size: 0.75em; color: var(--accent); font-weight: bold; text-transform: uppercase; }
-
         #dados-apto { display: none; }
-
         #avisoLucas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
-        .msg-box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 80%; }
+        .msg-box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 85%; }
         .loading { font-size: 14px; color: #f1c40f; display: none; margin-top: 15px; font-weight: bold;}
     </style>
 </head>
 <body>
 
 <div class="header-top">
-    <div class="logo-container">
-        <img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" alt="Logo">
-    </div>
-    <div class="header-title">
-        <h1>ALENCAR FRETES</h1>
-    </div>
+    <div class="logo-container"><img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" alt="Logo"></div>
+    <div class="header-title"><h1>ALENCAR FRETES</h1></div>
 </div>
 
 <div id="avisoLucas">
     <div class="msg-box">
         <h2 style="color: var(--accent);">Confirmar Pedido?</h2>
         <p>Os dados serão salvos no sistema e enviados para o WhatsApp.</p>
-        
-        <div id="loadingMsg" class="loading">
-            🔄 Salvando na planilha... aguarde...
-        </div>
-
+        <div id="loadingMsg" class="loading">🔄 Salvando na planilha... aguarde...</div>
         <div id="btnArea">
-            <button style="background:#25d366; color:white; width:100%; margin-top: 10px;" onclick="finalizarEnvio()">✅ ENVIAR AGORA</button>
-            <button style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:10px; width:100%;" onclick="fecharModal()">CANCELAR</button>
+            <button style="background:#25d366; color:white; margin-top: 10px;" onclick="finalizarEnvio()">✅ ENVIAR AGORA</button>
+            <button style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:10px;" onclick="fecharModal()">CANCELAR</button>
         </div>
     </div>
 </div>
@@ -98,37 +109,25 @@
 <div class="container">
     <div class="input-group">
         <div class="row">
-            <div>
-                <label>Data da Entrega *</label>
-                <input type="date" id="data_entrega">
-            </div>
-            <div>
-                <label>Horário *</label>
-                <input type="time" id="hora_entrega">
-            </div>
+            <div><label>Data *</label><input type="date" id="data_entrega"></div>
+            <div><label>Horário *</label><input type="time" id="hora_entrega"></div>
         </div>
-        
-        <div>
-            <label>Nome do Cliente *</label>
-            <input type="text" id="nome_cliente" placeholder="Nome completo">
-        </div>
-
-        <div>
-            <label>Endereço de Destino *</label>
-            <input type="text" id="destino" placeholder="Rua, nº, Bairro...">
-        </div>
-<div>
-    <label>Bairro (Automático)</label>
-    <input type="text" id="bairro_automatico" placeholder="Aguardando cálculo..." readonly style="background: #1a1a1a; color: #aaa; cursor: not-allowed;">
-</div>
-        <div>
-            <label>Ponto de Referência *</label>
-            <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado...">
-        </div>
+        <div><label>Nome do Cliente *</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
+        <div><label>Endereço de Destino *</label><input type="text" id="destino" placeholder="Rua, nº, Bairro..."></div>
+        <input type="hidden" id="bairro_automatico">
+        <div><label>Ponto de Referência *</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
         
         <div class="row">
             <button class="btn-clear" onclick="limpar()">Limpar</button>
             <button class="btn-calc" onclick="buscarRota()">CALCULAR FRETE</button>
+        </div>
+
+        <div id="campo-resumo">
+            <div class="resultado-grid">
+                <div class="card-info"><label>DISTÂNCIA</label><span id="distancia">0.00</span> <small>KM</small></div>
+                <div class="card-info"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
+            </div>
+            <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ⚠️</div>
         </div>
 
         <div>
@@ -140,23 +139,9 @@
         </div>
 
         <div class="row" id="dados-apto">
-            <div>
-                <label>Bloco *</label>
-                <input type="text" id="bloco" placeholder="Ex: B">
-            </div>
-            <div>
-                <label>Apto *</label>
-                <input type="text" id="apto" placeholder="Ex: 12">
-            </div>
+            <div><label>Bloco *</label><input type="text" id="bloco" placeholder="Ex: B"></div>
+            <div><label>Apto *</label><input type="text" id="apto" placeholder="Ex: 12"></div>
         </div>
-    </div>
-
-    <div class="resumo" id="campo-resumo">
-    <div class="distancia-texto">DISTÂNCIA TOTAL: <span id="distancia" style="color: white; font-weight: bold;">0</span> KM</div>
-    <div class="valor-final" id="valor">R$ 0,00</div>
-    
-    <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
-</div>
     </div>
 
     <button class="btn-confirm" onclick="prepararEnvio()">📱 Enviar dados P/ Lucas</button>
@@ -166,19 +151,16 @@
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
 <script>
-    // =========================================================================
-    // 👇👇 COLE A URL DO SEU SCRIPT AQUI DENTRO DAS ASPAS 👇👇
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvhHL4BiAecxAgumFmeFqmNhL62C87PSJ0zX1nIZTkB2tIDEz26y6SFbovQnh3B2oEHQ/exec"; 
-    // =========================================================================
-
     const TAXA_MINIMA = 5.00;
     const VALOR_POR_KM = 2.00;
     const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
     const WHATSAPP_NUMERO = "5511981071822";
 
     let tipoResidencia = "casa"; 
-    let rotaCalculada = false; // 🔒 TRAVA DE SEGURANÇA
+    let rotaCalculada = false;
 
+    // Inicialização do Mapa
     const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -192,15 +174,9 @@
 
     function selecionarTipo(tipo) {
         tipoResidencia = tipo;
-        if (tipo === 'casa') {
-            document.getElementById('btn-casa').classList.add('active');
-            document.getElementById('btn-apto').classList.remove('active');
-            document.getElementById('dados-apto').style.display = 'none';
-        } else {
-            document.getElementById('btn-apto').classList.add('active');
-            document.getElementById('btn-casa').classList.remove('active');
-            document.getElementById('dados-apto').style.display = 'grid';
-        }
+        document.getElementById('btn-casa').classList.toggle('active', tipo === 'casa');
+        document.getElementById('btn-apto').classList.toggle('active', tipo === 'apto');
+        document.getElementById('dados-apto').style.display = (tipo === 'apto' ? 'grid' : 'none');
     }
 
     async function buscarRota() {
@@ -208,41 +184,48 @@
         if(!dest) return alert("Por favor, digite o endereço de destino.");
         
         try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + " São Paulo")}`);
+            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(dest + " São Paulo")}`);
             const data = await resp.json();
+            
             if(data.length > 0) {
+                const info = data[0].address;
+                const bairroDetectado = info.suburb || info.neighbourhood || info.village || "ZONA URBANA";
+                document.getElementById('bairro_automatico').value = bairroDetectado.toUpperCase();
+                
                 control.setWaypoints([ORIGEM_FIXA, L.latLng(data[0].lat, data[0].lon)]);
-            } else { alert("Endereço não localizado no mapa."); }
+            } else { alert("Endereço não localizado."); }
         } catch (e) { alert("Erro ao buscar rota."); }
     }
 
     control.on('routesfound', function(e) {
         const km = e.routes[0].summary.totalDistance / 1000;
-        let valorFinal = Math.max(TAXA_MINIMA, km * VALOR_POR_KM);
+        const calculoBase = km * VALOR_POR_KM;
+        const valorFinal = Math.max(TAXA_MINIMA, calculoBase);
         
         document.getElementById('distancia').innerText = km.toFixed(2);
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         
-        rotaCalculada = true; // ✅ LIBERA O ENVIO
+        // Exibição condicional dos campos
+        document.getElementById('campo-resumo').style.display = 'block';
+        document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
+        
+        rotaCalculada = true;
         map.fitBounds(L.latLngBounds([ORIGEM_FIXA, e.routes[0].inputWaypoints[1].latLng]), {padding: [30, 30]});
     });
 
     function limpar() {
-        ['data_entrega','hora_entrega','destino','nome_cliente','bloco','apto','ponto_referencia'].forEach(id => document.getElementById(id).value = "");
-        document.getElementById('distancia').innerText = "0";
-        document.getElementById('valor').innerText = "R$ 0,00";
+        ['data_entrega','hora_entrega','destino','nome_cliente','bloco','apto','ponto_referencia','bairro_automatico'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('campo-resumo').style.display = 'none';
         selecionarTipo('casa');
         control.setWaypoints([ORIGEM_FIXA]);
-        
-        rotaCalculada = false; // 🔒 BLOQUEIA O ENVIO NOVAMENTE
+        rotaCalculada = false;
     }
 
     function formatarDataCompleta(dataString) {
         if(!dataString) return "";
         const [ano, mes, dia] = dataString.split('-');
         const data = new Date(ano, mes - 1, dia);
-        const opcoes = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-        return data.toLocaleDateString('pt-BR', opcoes).toUpperCase();
+        return data.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' }).toUpperCase();
     }
 
     function fecharModal() {
@@ -252,117 +235,44 @@
     }
 
     function prepararEnvio() {
-        // 🔒 VERIFICAÇÃO PRINCIPAL: SÓ DEIXA PASSAR SE TIVER CALCULADO
-        if (rotaCalculada === false) {
-            return alert("⚠️ ERRO: Você precisa clicar em 'CALCULAR FRETE' antes de enviar o pedido!");
-        }
-
-        const data = document.getElementById('data_entrega').value;
-        const hora = document.getElementById('hora_entrega').value;
-        const nome = document.getElementById('nome_cliente').value;
-        const dest = document.getElementById('destino').value;
-        const ref = document.getElementById('ponto_referencia').value;
-
-        if(!data || !hora || !nome || !dest || !ref) {
-            return alert("Por favor, preencha TODOS os campos obrigatórios*.");
-        }
-
-        if(tipoResidencia === 'apto') {
-            const bloco = document.getElementById('bloco').value;
-            const apto = document.getElementById('apto').value;
-            if(!bloco || !apto) {
-                return alert("Para Apartamento, preencha Bloco e Apto.");
-            }
-        }
-
+        if (!rotaCalculada) return alert("⚠️ Calcule o frete primeiro!");
+        const campos = ['data_entrega', 'hora_entrega', 'nome_cliente', 'destino', 'ponto_referencia'];
+        for(let id of campos) if(!document.getElementById(id).value) return alert("Preencha todos os campos!");
         document.getElementById('avisoLucas').style.display = 'flex';
     }
 
     function finalizarEnvio() {
-        const bairro = document.getElementById('bairro_automatico').value; // Pega o bairro
-    const dest = document.getElementById('destino').value;
-    // ... (suas outras variáveis: data, hora, nome, etc)
-        const dataRaw = document.getElementById('data_entrega').value;
-        const dataFormatada = formatarDataCompleta(dataRaw);
+        const dataFormatada = formatarDataCompleta(document.getElementById('data_entrega').value);
         const horaE = document.getElementById('hora_entrega').value;
         const nome = document.getElementById('nome_cliente').value;
         const dest = document.getElementById('destino').value;
+        const bairro = document.getElementById('bairro_automatico').value;
         const ref = document.getElementById('ponto_referencia').value;
         const valor = document.getElementById('valor').innerText;
         const km = document.getElementById('distancia').innerText;
-        
-        let bloco = "---";
-        let apto = "---";
-        
-        if(tipoResidencia === 'apto') {
-            bloco = document.getElementById('bloco').value;
-            apto = document.getElementById('apto').value;
-        }
+        const bloco = tipoResidencia === 'apto' ? document.getElementById('bloco').value : "---";
+        const apto = tipoResidencia === 'apto' ? document.getElementById('apto').value : "---";
 
-        // --- Mensagem WhatsApp ---
         let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
-        msg += `📅 *DATA DA ENTREGA:* ${dataFormatada}%0A`;
-        msg += `⏰ *HORA PARA ENTREGAR:* ${horaE}%0A`;
-        msg += `👤 *CLIENTE RECEBEDOR:* ${nome}%0A`;
-        msg += `🏠 *TIPO:* ${tipoResidencia.toUpperCase()}%0A`;
-        if(tipoResidencia === 'apto') {
-            msg += `🏢 *BLOCO:* ${bloco} | 🚪 *APTO:* ${apto}%0A`;
-        }
-        msg += `📍 *REF:* ${ref}%0A`;
-        msg += `🏁 *DESTINO:* ${dest}%0A`;
-        msg += `🏘️ *BAIRRO:* ${bairro}%0A`; // <--- LINHA ADICIONADA
-        msg += `📏 *DISTÂNCIA:* ${km} km%0A`;
-        msg += `💰 *VALOR:* ${valor}`;
+        msg += `📅 *DATA:* ${dataFormatada}%0A⏰ *HORA:* ${horaE}%0A👤 *CLIENTE:* ${nome}%0A🏘️ *BAIRRO:* ${bairro}%0A🏠 *TIPO:* ${tipoResidencia.toUpperCase()}%0A`;
+        if(tipoResidencia === 'apto') msg += `🏢 *BLOCO:* ${bloco} | 🚪 *APTO:* ${apto}%0A`;
+        msg += `📍 *REF:* ${ref}%0A🏁 *DESTINO:* ${dest}%0A📏 *DISTÂNCIA:* ${km} km%0A💰 *VALOR:* ${valor}`;
 
-        // --- Envio para Planilha ---
-        const dadosPlanilha = {
-            data: dataFormatada,
-            hora: horaE,
-            nome: nome,
-            destino: dest,
-            bairro: bairro, // <--- ADICIONE ISSO TAMBÉM
-            referencia: ref,
-            tipo: tipoResidencia,
-            bloco: bloco,
-            apto: apto,
-            km: km,
-            valor: valor
-            
-    
-        };
-
-        enviarParaGoogleSheets(dadosPlanilha, msg);
+        enviarParaGoogleSheets({ data: dataFormatada, hora: horaE, nome: nome, destino: dest, bairro: bairro, referencia: ref, tipo: tipoResidencia, bloco: bloco, apto: apto, km: km, valor: valor }, msg);
     }
 
     function enviarParaGoogleSheets(dados, msgWhatsapp) {
-        // Verifica se a URL foi configurada
-        if(GOOGLE_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbzW1jsJbBY0SHx8niaZxVLXI6dXc1sw6RzUihzYaWnu0Gp37Sr1tQcevyDJrsQgQtB4IA/exec")) {
-            alert("⚠️ A URL da Planilha não foi configurada! O pedido irá apenas para o WhatsApp.");
-            window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msgWhatsapp}`, '_blank');
-            fecharModal();
-            return;
-        }
-
-        // UI Loading
         document.getElementById('loadingMsg').style.display = 'block';
         document.getElementById('btnArea').style.display = 'none';
 
-        // Fetch com no-cors para evitar bloqueio do navegador
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        }).then(() => {
-            // Como usamos no-cors, assumimos sucesso se a requisição saiu
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) })
+        .then(() => {
             setTimeout(() => {
                 window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msgWhatsapp}`, '_blank');
                 fecharModal();
-                limpar(); // Limpa a tela para o próximo pedido
+                limpar();
             }, 1000);
-        }).catch(err => {
-            console.error("Erro no envio:", err);
-            alert("Houve um erro ao salvar na planilha, mas vamos abrir o WhatsApp.");
+        }).catch(() => {
             window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msgWhatsapp}`, '_blank');
             fecharModal();
         });
