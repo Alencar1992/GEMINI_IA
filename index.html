@@ -50,7 +50,6 @@
             border-radius: 10px; font-size: 16px; width: 100%; box-sizing: border-box;
         }
 
-        /* AJUSTE ESPAÇAMENTO DATA E HORA MOBILE */
         .row-data-hora { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -58,15 +57,11 @@
             margin-bottom: 5px;
         }
 
-        /* GRID PARA ENDEREÇO, NÚMERO E BAIRRO */
-        .row-endereco { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .row-num-bairro { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; }
-
-        .area-botoes { 
-            display: flex; 
-            flex-direction: column; 
+        /* GRID: ENDEREÇO AO LADO DO NÚMERO */
+        .row-endereco-num { 
+            display: grid; 
+            grid-template-columns: 3fr 1fr; 
             gap: 15px; 
-            margin: 10px 0;
         }
 
         button { 
@@ -75,7 +70,6 @@
             letter-spacing: 1px; transition: all 0.2s;
         }
 
-        /* BOTÃO CALCULAR E TIPO LOCAL 3D VERDE */
         .btn-3d-green { 
             background: var(--verde-frete); 
             color: white; 
@@ -87,12 +81,8 @@
             box-shadow: 0 2px 0 var(--verde-dark); 
         }
 
-        /* BOTÕES CASA E APTO ESTILIZADOS */
         .tipo-residencia { display: flex; gap: 15px; margin-top: 5px; }
-        .btn-tipo { 
-            background: #333; color: #fff; border: 1px solid #444; 
-            box-shadow: 0 4px 0 #111;
-        }
+        .btn-tipo { background: #333; color: #fff; border: 1px solid #444; box-shadow: 0 4px 0 #111; }
         .btn-tipo.active { 
             background: var(--verde-frete); 
             color: white; 
@@ -100,9 +90,9 @@
             transform: translateY(-2px);
         }
 
-        .btn-clear { background: #444; color: white; margin-top: 5px; opacity: 0.8; }
+        .btn-clear { background: #444; color: white; margin-top: 5px; opacity: 0.8; box-shadow: 0 4px 0 #222; }
 
-        /* CARDS DE RESULTADO 3D COM LUZ AZUL */
+        /* RESULTADOS */
         #campo-resumo {
             display: none; 
             background: #0a0a0a;
@@ -113,19 +103,19 @@
         }
 
         .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
-        
         .card-info-3d { 
-            background: #151515; 
-            padding: 15px; 
-            border-radius: 15px; 
-            border: 1px solid #222;
+            background: #151515; padding: 15px; border-radius: 15px; border: 1px solid #222;
             box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.2), 0 5px 15px rgba(0,0,0,0.5);
-            position: relative;
         }
 
-        .card-info-3d label { font-size: 10px; color: var(--azul-3d); margin-bottom: 8px; text-shadow: 0 0 5px rgba(0,212,255,0.5); }
+        .card-info-3d label { font-size: 10px; color: var(--azul-3d); margin-bottom: 8px; }
         .card-info-3d span { font-size: 1.5em; font-weight: 900; color: #fff; display: block; }
         .valor-destaque { color: var(--verde-frete) !important; font-size: 1.8em !important; }
+
+        .bairro-display {
+            text-align: center; margin-top: 15px; padding: 10px;
+            border-top: 1px solid #222; color: var(--azul-3d); font-weight: bold;
+        }
 
         #aviso-taxa {
             display: none; background: rgba(241, 196, 15, 0.1); color: #f1c40f;
@@ -142,7 +132,7 @@
 <body>
 
 <div class="header-top">
-    <div class="logo-container"><img src="logo-cowboy-motofrete.png" alt="Logo"></div>
+    <div class="logo-container"><img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" alt="Logo"></div>
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
 </div>
 
@@ -157,17 +147,14 @@
         
         <div><label>👤 CLIENTE</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
         
-        <div class="row-endereco">
-            <div><label>📍 RUA / AVENIDA</label><input type="text" id="destino" placeholder="Ex: Av. Paulista"></div>
-            <div class="row-num-bairro">
-                <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
-                <div><label>🏘️ BAIRRO</label><input type="text" id="bairro_automatico" placeholder="Automático" readonly style="color: var(--azul-3d); font-weight: bold;"></div>
-            </div>
+        <div class="row-endereco-num">
+            <div><label>📍 ENDEREÇO</label><input type="text" id="destino" placeholder="Rua ou Avenida"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
         </div>
 
-        <div><label>🚩 PONTO DE REFERÊNCIA</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado"></div>
+        <div><label>🚩 PONTO DE REFERÊNCIA</label><input type="text" id="ponto_referencia" placeholder="Próximo a..."></div>
         
-        <div class="area-botoes">
+        <div style="display: flex; flex-direction: column; gap: 15px; margin: 10px 0;">
             <button class="btn-3d-green" onclick="buscarRota()">🚀 CALCULAR FRETE</button>
             <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
         </div>
@@ -177,6 +164,7 @@
                 <div class="card-info-3d"><label>DISTÂNCIA</label><span id="distancia">0.00</span><small>KM</small></div>
                 <div class="card-info-3d"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
             </div>
+            <div class="bairro-display">🏘️ BAIRRO: <span id="res-bairro">---</span></div>
             <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
         </div>
 
@@ -189,8 +177,8 @@
         </div>
 
         <div class="row-data-hora" id="dados-apto">
-            <div><label>BLOCO</label><input type="text" id="bloco" placeholder="T1"></div>
-            <div><label>APTO</label><input type="text" id="apto" placeholder="610"></div>
+            <div><label>BLOCO</label><input type="text" id="bloco" placeholder="B"></div>
+            <div><label>APTO</label><input type="text" id="apto" placeholder="101"></div>
         </div>
     </div>
 
@@ -200,7 +188,7 @@
 <div id="avisoLucas">
     <div class="msg-box">
         <h2 style="color: var(--accent); font-weight: 900;">CONFIRMAR?</h2>
-        <p>O pedido será registrado e o para o WhatsApp do LUCAS.</p>
+        <p>O pedido será registrado e para o WhatsApp do LUCAS.</p>
         <button class="btn-3d-green" style="margin-top: 10px;" onclick="finalizarEnvio()">✅ SIM, ENVIAR</button>
         <button style="background:transparent; color:#ff4444; border:1px solid #ff4444; margin-top:15px;" onclick="fecharModal()">CANCELAR</button>
     </div>
@@ -218,6 +206,7 @@
 
     let tipoResidencia = "casa"; 
     let rotaCalculada = false;
+    let bairroGlobal = "";
 
     const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -232,18 +221,9 @@
 
     function selecionarTipo(tipo) {
         tipoResidencia = tipo;
-        const btnCasa = document.getElementById('btn-casa');
-        const btnApto = document.getElementById('btn-apto');
-        
-        if(tipo === 'casa') {
-            btnCasa.classList.add('active', 'btn-3d-green');
-            btnApto.classList.remove('active', 'btn-3d-green');
-            document.getElementById('dados-apto').style.display = 'none';
-        } else {
-            btnApto.classList.add('active', 'btn-3d-green');
-            btnCasa.classList.remove('active', 'btn-3d-green');
-            document.getElementById('dados-apto').style.display = 'grid';
-        }
+        document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-tipo btn-3d-green active' : 'btn-tipo';
+        document.getElementById('btn-apto').className = tipo === 'apto' ? 'btn-tipo btn-3d-green active' : 'btn-tipo';
+        document.getElementById('dados-apto').style.display = tipo === 'apto' ? 'grid' : 'none';
     }
 
     async function buscarRota() {
@@ -257,8 +237,8 @@
             
             if(data.length > 0) {
                 const info = data[0].address;
-                const bairro = info.suburb || info.neighbourhood || info.village || "SÃO PAULO";
-                document.getElementById('bairro_automatico').value = bairro.toUpperCase();
+                bairroGlobal = info.suburb || info.neighbourhood || info.village || "SÃO PAULO";
+                document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
                 control.setWaypoints([ORIGEM_FIXA, L.latLng(data[0].lat, data[0].lon)]);
             } else { alert("Endereço não localizado."); }
         } catch (e) { alert("Erro na busca."); }
@@ -267,14 +247,12 @@
     control.on('routesfound', function(e) {
         const routes = e.routes[0];
         const km = routes.summary.totalDistance / 1000;
-        const calculoBase = km * VALOR_POR_KM;
-        const valorFinal = Math.max(TAXA_MINIMA, calculoBase);
+        const valorFinal = Math.max(TAXA_MINIMA, km * VALOR_POR_KM);
         
         document.getElementById('distancia').innerText = km.toFixed(2);
         document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        
         document.getElementById('campo-resumo').style.display = 'block';
-        document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
+        document.getElementById('aviso-taxa').style.display = (km * VALOR_POR_KM < TAXA_MINIMA ? 'block' : 'none');
         
         rotaCalculada = true;
         map.fitBounds(routes.bounds, {padding: [30, 30]});
@@ -290,31 +268,35 @@
     function obterDataFormatada(dataInput) {
         if(!dataInput) return "---";
         const partes = dataInput.split('-');
-        const data = new Date(partes[0], partes[1] - 1, partes[2]);
-        return data.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+        return new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
     }
 
     function finalizarEnvio() {
-        const dataFormatada = obterDataFormatada(document.getElementById('data_entrega').value);
-        const horaE = document.getElementById('hora_entrega').value || "---";
+        const bloco = document.getElementById('bloco').value;
+        const apto = document.getElementById('apto').value;
 
         const dados = {
-            data: dataFormatada,
-            hora: horaE,
+            data: obterDataFormatada(document.getElementById('data_entrega').value),
+            hora: document.getElementById('hora_entrega').value || "---",
             nome: document.getElementById('nome_cliente').value,
             destino: document.getElementById('destino').value + ", " + document.getElementById('num_residencia').value,
-            bairro: document.getElementById('bairro_automatico').value,
+            bairro: bairroGlobal.toUpperCase(),
             ref: document.getElementById('ponto_referencia').value,
             km: document.getElementById('distancia').innerText,
             valor: document.getElementById('valor').innerText,
             tipo: tipoResidencia.toUpperCase(),
-            bloco: document.getElementById('bloco').value || "---",
-            apto: document.getElementById('apto').value || "---"
+            bloco: tipoResidencia === 'apto' ? (bloco || "---") : "---",
+            apto: tipoResidencia === 'apto' ? (apto || "---") : "---"
         };
 
         let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
         msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
-        if(tipoResidencia === 'apto') msg += `🏢 *BLOCO:* ${dados.bloco} | 🚪 *APTO:* ${dados.apto}%0A`;
+        
+        // SÓ APARECE BLOCO E APTO SE FOR PREENCHIDO E SE FOR TIPO APTO
+        if(tipoResidencia === 'apto' && (bloco || apto)) {
+            msg += `🏢 *LOCAL:* Bloco ${bloco || 'N/A'} - Apto ${apto || 'N/A'}%0A`;
+        }
+        
         msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
 
         fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
