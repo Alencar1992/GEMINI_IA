@@ -157,7 +157,7 @@
             <div class="distancia-texto">Distância: <span id="distancia" style="color: white; font-weight: bold;">0</span> km</div> [cite: 56]
             <div class="valor-final" id="valor">R$ 0,00</div> [cite: 56]
         </div>
-        <div id="aviso-taxa-minima">⚠️ TAXA MÍNIMA APLICADA</div>
+        <div id="aviso-taxa-minima">⚠️TAXA MÍNIMA APLICADA✅</div>
     </div>
 
     <button class="btn-confirm" onclick="prepararEnvio()">📱 Enviar dados P/ Lucas</button>
@@ -166,7 +166,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-<script>
+<script>                      /*https://script.google.com/macros/s/AKfycbzW1jsJbBY0SHx8niaZxVLXI6dXc1sw6RzUihzYaWnu0Gp37Sr1tQcevyDJrsQgQtB4IA/exec*/        
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvhHL4BiAecxAgumFmeFqmNhL62C87PSJ0zX1nIZTkB2tIDEz26y6SFbovQnh3B2oEHQ/exec"; 
     const TAXA_MINIMA = 5.00; [cite: 1, 56]
     const VALOR_POR_KM = 2.00; // Ajustado para 2.00 conforme script oficial [cite: 1]
@@ -291,7 +291,7 @@
     }
 
     function enviarParaGoogleSheets(dados, msgWhatsapp) {
-        if(GOOGLE_SCRIPT_URL.includes("SUA_URL")) {
+        if(GOOGLE_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbzW1jsJbBY0SHx8niaZxVLXI6dXc1sw6RzUihzYaWnu0Gp37Sr1tQcevyDJrsQgQtB4IA/exec")) {
             window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msgWhatsapp}`, '_blank');
             return fecharModal();
         }
