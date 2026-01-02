@@ -1,15 +1,31 @@
-.logo-container img {
-    height: 60px; /* Define uma altura elegante para o topo */
-    width: auto;  /* Mantém a proporção da imagem */
-    border-radius: 5px; /* Deixa as pontas levemente arredondadas */
-    display: block;
+/* O resumo agora inicia oculto e com visual renovado */
+.resumo { 
+    display: none; 
+    background: #111; 
+    padding: 20px; 
+    border-radius: 12px; 
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 15px rgba(255, 159, 67, 0.2);
+    text-align: center;
 }
 
-.header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background: var(--card);
-    border-bottom: 2px solid var(--accent);
+.valor-final { 
+    font-size: 2.2em; 
+    font-weight: 900; 
+    color: var(--verde-frete); 
+    display: block;
+    margin-top: 5px;
+}
+
+/* Estilo para o aviso de taxa mínima */
+#aviso-taxa {
+    display: none;
+    background: var(--accent);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.9em;
+    padding: 5px;
+    border-radius: 5px;
+    margin-top: 10px;
+    text-transform: uppercase;
 }
