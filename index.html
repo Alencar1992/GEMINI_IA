@@ -36,6 +36,7 @@
         }
 
         #map { height: 25vh; width: 100%; border-bottom: 2px solid var(--accent); z-index: 1; }
+        /* Removido display:none para mostrar o trajeto */
         .leaflet-routing-container { display: none !important; }
 
         .container { padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
@@ -96,7 +97,6 @@
         .card-info-3d label { font-size: 10px; color: var(--azul-3d); margin-bottom: 8px; }
         .card-info-3d span { font-size: 1.5em; font-weight: 900; color: #fff; display: block; }
 
-        /* AJUSTE SOLICITADO NO DESIGN DO BAIRRO E TEMPO */
         .bairro-tempo-display {
             text-align: center; 
             margin-top: 15px; 
@@ -136,11 +136,14 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         .msg-box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 85%; max-width: 400px; }
         
-        .tipo-residencia { display: flex; gap: 15px; margin-top: 5px; }
-        .btn-tipo { background: #333; color: #fff; border: 1px solid #444; box-shadow: 0 4px 0 #111; }
-        .btn-tipo.active { background: var(--verde-frete); color: white; box-shadow: 0 6px 0 var(--verde-dark); transform: translateY(-2px); }
+        .tipo-residencia, .tipo-busca { display: flex; gap: 15px; margin-top: 5px; }
+        .btn-tipo, .btn-busca { background: #333; color: #fff; border: 1px solid #444; box-shadow: 0 4px 0 #111; }
+        .btn-tipo.active, .btn-busca.active { background: var(--verde-frete); color: white; box-shadow: 0 6px 0 var(--verde-dark); transform: translateY(-2px); }
 
         #dados-apto { display: none; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        
+        /* Novos estilos para os campos de endereço */
+        #campo-cep, #campo-rua { display: none; }
     </style>
 </head>
 <body>
@@ -160,15 +163,33 @@
     
     <div><label>👤 CLIENTE</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
     
-    <div class="row-endereco-num">
-        <div><label>📍 ENDEREÇO</label><input type="text" id="destino" placeholder="Rua ou Avenida"></div>
-        <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
+    <div>
+        <label>📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
+        <div class="tipo-busca">
+            <button class="btn-busca" id="btn-por-cep" onclick="selecionarBusca('cep')">CEP</button>
+            <button class="btn-busca" id="btn-por-rua" onclick="selecionarBusca('rua')">NOME DA RUA</button>
+        </div>
     </div>
 
-    <div><label>🚩 PONTO DE REFERÊNCIA</label><input type="text" id="ponto_referencia" placeholder="Próximo a..."></div>
+    <div id="campo-cep">
+        <div class="row-endereco-num">
+            <div><label>📮 CEP</label><input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia_cep" placeholder="123"></div>
+        </div>
+        <div><label>📍 RUA</label><input type="text" id="rua_pelo_cep" placeholder="Nome da rua aparecerá aqui" readonly></div>
+    </div>
+
+    <div id="campo-rua">
+        <div class="row-endereco-num">
+            <div><label>📍 ENDEREÇO</label><input type="text" id="destino" placeholder="Rua ou Avenida"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
+        </div>
+    </div>
+
+    <div><label>🚩PONTO DE REFERÊNCIA (opcional)</label><input type="text" id="ponto_referencia" placeholder="Próximo a..."></div>
     
     <div style="display: flex; flex-direction: column; gap: 15px; margin: 10px 0;">
-        <button class="btn-3d-green" onclick="validarExpediente()">🚀 CALCULAR FRETE</button>
+        <button class="btn-3d-green" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
         <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
     </div>
 
@@ -238,6 +259,7 @@
     const WHATSAPP_NUMERO = "5511981071822";
 
     let tipoResidencia = "casa"; 
+    let tipoBusca = ""; // 'cep' ou 'rua'
     let rotaCalculada = false;
     let bairroGlobal = "";
     let tempoGlobal = "";
@@ -245,10 +267,18 @@
     const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
+    // Marcador de origem
+    L.marker(ORIGEM_FIXA).addTo(map).bindPopup("Origem: Av. João Dias").openPopup();
+
     let control = L.Routing.control({
         waypoints: [ORIGEM_FIXA],
         lineOptions: { styles: [{ color: '#00d4ff', weight: 6 }] },
-        createMarker: () => null, 
+        createMarker: function(i, waypoint, n) {
+            if (i === n - 1) {
+                return L.marker(waypoint.latLng).bindPopup("Destino");
+            }
+            return null;
+        }, 
         addWaypoints: false,
         show: false
     }).addTo(map);
@@ -260,11 +290,50 @@
         document.getElementById('dados-apto').style.display = tipo === 'apto' ? 'grid' : 'none';
     }
 
+    function selecionarBusca(tipo) {
+        tipoBusca = tipo;
+        document.getElementById('btn-por-cep').className = tipo === 'cep' ? 'btn-busca active' : 'btn-busca';
+        document.getElementById('btn-por-rua').className = tipo === 'rua' ? 'btn-busca active' : 'btn-busca';
+        
+        document.getElementById('campo-cep').style.display = tipo === 'cep' ? 'block' : 'none';
+        document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
+    }
+
+    async function buscarCep() {
+        const cep = document.getElementById('cep').value.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            if (!data.erro) {
+                document.getElementById('rua_pelo_cep').value = data.logradouro;
+                bairroGlobal = data.bairro;
+            } else {
+                alert("CEP não encontrado.");
+            }
+        } catch (e) {
+            alert("Erro ao buscar CEP.");
+        }
+    }
+
     function validarExpediente() {
         const dataVal = document.getElementById('data_entrega').value;
         const horaVal = document.getElementById('hora_entrega').value;
 
         if(!dataVal || !horaVal) return alert("Preencha Data e Hora!");
+        
+        if (!tipoBusca) return alert("Selecione como deseja informar o endereço (CEP ou Rua)!");
+
+        if (tipoBusca === 'cep') {
+            if (!document.getElementById('cep').value || !document.getElementById('num_residencia_cep').value) {
+                return alert("Preencha o CEP e o Número!");
+            }
+        } else {
+            if (!document.getElementById('destino').value || !document.getElementById('num_residencia').value) {
+                return alert("Preencha o Endereço e o Número!");
+            }
+        }
 
         const d = new Date(dataVal + 'T' + horaVal);
         const diaSemana = d.getDay();
@@ -283,17 +352,22 @@
     }
 
     async function buscarRota() {
-        const dest = document.getElementById('destino').value;
-        const num = document.getElementById('num_residencia').value;
-        if(!dest || !num) return alert("Preencha Rua e Número!");
+        let enderecoBusca = "";
+        if (tipoBusca === 'cep') {
+            enderecoBusca = document.getElementById('rua_pelo_cep').value + ", " + document.getElementById('num_residencia_cep').value;
+        } else {
+            enderecoBusca = document.getElementById('destino').value + ", " + document.getElementById('num_residencia').value;
+        }
         
         try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(dest + ", " + num + " São Paulo")}`);
+            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(enderecoBusca + " São Paulo")}`);
             const data = await resp.json();
             
             if(data.length > 0) {
                 const info = data[0].address;
-                bairroGlobal = info.suburb || info.neighbourhood || info.village || "SÃO PAULO";
+                if (!bairroGlobal) {
+                    bairroGlobal = info.suburb || info.neighbourhood || info.village || "SÃO PAULO";
+                }
                 document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
                 control.setWaypoints([ORIGEM_FIXA, L.latLng(data[0].lat, data[0].lon)]);
             } else { alert("Endereço não localizado."); }
@@ -334,14 +408,21 @@
     function finalizarEnvio() {
         const bloco = document.getElementById('bloco').value;
         const apto = document.getElementById('apto').value;
+        
+        let destinoFinal = "";
+        if (tipoBusca === 'cep') {
+            destinoFinal = document.getElementById('rua_pelo_cep').value + ", " + document.getElementById('num_residencia_cep').value + " (CEP: " + document.getElementById('cep').value + ")";
+        } else {
+            destinoFinal = document.getElementById('destino').value + ", " + document.getElementById('num_residencia').value;
+        }
 
         const dados = {
             data: obterDataFormatada(document.getElementById('data_entrega').value),
             hora: document.getElementById('hora_entrega').value || "---",
             nome: document.getElementById('nome_cliente').value,
-            destino: document.getElementById('destino').value + ", " + document.getElementById('num_residencia').value,
+            destino: destinoFinal,
             bairro: bairroGlobal.toUpperCase(),
-            ref: document.getElementById('ponto_referencia').value,
+            ref: document.getElementById('ponto_referencia').value || "NÃO INFORMADO",
             km: document.getElementById('distancia').innerText,
             valor: document.getElementById('valor').innerText,
             tipo: tipoResidencia.toUpperCase(),
