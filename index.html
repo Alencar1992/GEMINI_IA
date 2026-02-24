@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALENCAR FRETES</title>
+    <title>🏍💨 ALENCAR FRETES</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=7" />
+    <link rel="stylesheet" href="style.css?v=8" />
 </head>
 <body>
 
@@ -16,106 +16,114 @@
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
 </div>
 
-<div id="map"></div>
-
 <div class="container">
-    <div id="sec-passo1" class="box-section">
-        <div class="row-endereco-num">
-            <div><label>📅 DATA DA ENTREGA</label><input type="date" id="data_entrega"></div>
-            <div><label>⏰ HORÁRIO</label><input type="time" id="hora_entrega"></div>
-        </div>
-        <div style="margin-top: 15px;">
-            <label>👤 NOME DO CLIENTE</label>
-            <input type="text" id="nome_cliente" placeholder="Digite o nome completo">
-        </div>
+    <div class="row-endereco-num">
+        <div><label>📅 DATA DA ENTREGA</label><input type="date" id="data_entrega"></div>
+        <div><label>⏰ HORÁRIO</label><input type="time" id="hora_entrega"></div>
     </div>
     
-    <div id="sec-passo2" class="box-section" style="display: none;">
-        <label style="text-align: center;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
+    <div><label>👤 NOME DO CLIENTE</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
+    
+    <div class="box-destaque">
+        <label style="text-align: center; font-size: 0.9em;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
         <div class="tipo-busca">
-            <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
+            <button class="btn-selecao active" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
             <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">Nome da Rua</button>
         </div>
     </div>
 
-    <div id="sec-passo3" class="box-section" style="display: none;">
-        <div id="campo-cep" style="display: none;">
-            <div class="row-endereco-num">
-                <div><label>📮 CEP</label><input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()"></div>
-                <div><label>Nº</label><input type="text" id="num_residencia_cep" placeholder="Ex: 123" oninput="liberarCalculo()"></div>
-            </div>
-            <div style="margin-top: 15px;"><label>📍 RUA</label><input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly></div>
+    <div id="campo-cep" style="display: block;">
+        <div class="row-endereco-num">
+            <div><label>📮 CEP</label><input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia_cep" placeholder="Ex: 123"></div>
         </div>
+        <div><label>📍 RUA</label><input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly></div>
+    </div>
 
-        <div id="campo-rua" style="display: none;">
-            <div class="row-endereco-num">
-                <div><label>📍 RUA OU AVENIDA</label><input type="text" id="destino" placeholder="Ex: Av Paulista" oninput="liberarCalculo()"></div>
-                <div><label>Nº</label><input type="text" id="num_residencia" placeholder="Ex: 123" oninput="liberarCalculo()"></div>
-            </div>
+    <div id="campo-rua" style="display: none;">
+        <div class="row-endereco-num">
+            <div><label>📍 RUA OU AVENIDA</label><input type="text" id="destino" placeholder="Ex: Av Paulista"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia" placeholder="Ex: 123"></div>
         </div>
     </div>
 
-    <div id="sec-passo4" class="box-section" style="display: none;">
-        <label>🚩 PONTO DE REFERÊNCIA (Opcional)</label>
-        <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado...">
+    <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
+    
+    <div class="botoes-acao">
+        <button class="btn-3d-orange" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
+        <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
+    </div>
+
+    <div id="campo-resumo" style="display: none;">
+        <h3 class="titulo-neon-laranja">RESUMO DO PEDIDO</h3>
         
-        <div class="botoes-acao" style="margin-top: 15px;">
-            <button class="btn-primary" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
-            <button class="btn-clear" onclick="limpar()">🧹 Reiniciar Pedido</button>
+        <div class="resultado-grid">
+            <div class="card-info-3d">
+                <label>DISTÂNCIA</label>
+                <span id="distancia">0.00 <small style="font-size: 0.5em;">KM</small></span>
+            </div>
+            <div class="card-info-3d">
+                <label>VALOR TOTAL</label>
+                <span id="valor" class="valor-destaque">R$ 0,00</span>
+            </div>
+        </div>
+        
+        <div class="bairro-tempo-display">
+            <div class="info-item">
+                <span class="info-text-label">🏘️ Bairro de Destino</span>
+                <span class="info-value-neon" id="res-bairro">---</span>
+            </div>
+            <div class="info-item">
+                <span class="info-text-label">⏱️ Tempo de Viagem</span>
+                <span class="info-value-neon" id="res-tempo">---</span>
+            </div>
+        </div>
+        
+        <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
+
+        <div id="mapa-container" style="margin-top: 20px; border-radius: 15px; overflow: hidden; border: 2px solid var(--azul-3d); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);">
+            <div id="map"></div>
         </div>
     </div>
 
-    <div id="sec-passo5" style="display: none;">
-        <div id="campo-resumo">
-            <h3>RESUMO DO PEDIDO</h3>
-            <div class="resultado-grid">
-                <div class="card-info"><label>DISTÂNCIA</label><span id="distancia">0.00 <small>KM</small></span></div>
-                <div class="card-info"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
-            </div>
-            <div class="bairro-tempo-display">
-                <div class="info-item"><span class="info-text-label">🏘️ Bairro de Destino</span><span class="info-value" id="res-bairro">---</span></div>
-                <div class="info-item"><span class="info-text-label">⏱️ Tempo de Viagem</span><span class="info-value" id="res-tempo">---</span></div>
-            </div>
-            <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA</div>
+    <div class="box-destaque" id="sec-tipo-local" style="display: none; margin-top: 15px;">
+        <label style="text-align: center;">🏠 TIPO DE LOCAL DE ENTREGA</label>
+        <div class="tipo-residencia">
+            <button class="btn-selecao active" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
+            <button class="btn-selecao" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
         </div>
-
-        <div class="box-section" style="margin-top: 20px;">
-            <label style="text-align: center;">🏠 TIPO DE LOCAL DE ENTREGA</label>
-            <div class="tipo-residencia">
-                <button class="btn-selecao" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
-                <button class="btn-selecao" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
-            </div>
-            
-            <div id="dados-apto" style="display: none; margin-top: 15px;">
+        
+        <div id="dados-apto" style="display: none; margin-top: 15px;">
+            <div class="row-endereco-num">
                 <div><label>BLOCO</label><input type="text" id="bloco" placeholder="Ex: B"></div>
                 <div><label>APTO</label><input type="text" id="apto" placeholder="Ex: 101"></div>
             </div>
         </div>
 
-        <button class="btn-whatsapp" onclick="prepararEnvio()" style="margin-top: 20px;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
+        <button class="btn-whatsapp-3d" onclick="prepararEnvio()" style="margin-top: 20px;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
     </div>
 </div>
 
 <div id="modalExpediente" class="modal-overlay">
     <div class="msg-box">
-        <h2>⚠️ ATENÇÃO</h2>
+        <h2 style="color: #f1c40f;">⚠️ ATENÇÃO</h2>
         <p>A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
-        <button class="btn-primary" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
+        <button class="btn-3d-orange" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
         <button class="btn-voltar" onclick="fecharModalExpediente()">CANCELAR</button>
     </div>
 </div>
 
 <div id="avisoLucas" class="modal-overlay">
     <div class="msg-box">
-        <h2>TUDO CERTO!</h2>
+        <h2 style="color: var(--accent);">TUDO CERTO!</h2>
         <p>Deseja enviar os dados do pedido para o WhatsApp?</p>
-        <button class="btn-whatsapp" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
+        <button class="btn-whatsapp-3d" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
         <button class="btn-voltar" onclick="fecharModal()">VOLTAR</button>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=7"></script>
+<script src="script.js?v=8"></script>
 </body>
 </html>
