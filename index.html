@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=10" />
+    <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
 
@@ -25,7 +25,7 @@
     <div><label>👤 NOME DO CLIENTE</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
     
     <div class="box-destaque">
-        <label style="text-align: center; font-size: 0.9em;">📍 COMO DESEJA PESQUISAR O ENDEREÇO?</label>
+        <label style="text-align: center; font-size: 0.9em;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
         <div class="tipo-busca">
             <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
             <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">Nome da Rua</button>
@@ -42,15 +42,19 @@
 
     <div id="campo-rua" style="display: none;">
         <div class="row-endereco-num">
-            <div><label>📍 RUA OU AVENIDA E BAIRRO</label><input type="text" id="destino" placeholder="Ex: Av joão Dias"></div>
+            <div style="position: relative;">
+                <label>📍 RUA OU AVENIDA</label>
+                <input type="text" id="destino" placeholder="Comece a digitar..." oninput="sugerirEndereco(this.value)" autocomplete="off">
+                <div id="lista-sugestoes" class="autocomplete-lista"></div>
+            </div>
             <div><label>Nº</label><input type="text" id="num_residencia" placeholder="Ex: 123"></div>
         </div>
     </div>
 
-    <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Estadio do São Paulo..."></div>
+    <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
     
     <div class="botoes-acao">
-        <button class="btn-3d-green" id="btn-calcular" onclick="validarExpediente()">🏍️ CALCULAR O FRETE</button>
+        <button class="btn-3d-green" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
         <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
     </div>
 
@@ -87,7 +91,7 @@
     </div>
 
     <div class="box-destaque" id="sec-tipo-local" style="display: none; margin-top: 15px;">
-        <label style="text-align: center;">🏠 ONDE SERÁ? 🏢</label>
+        <label style="text-align: center;">🏠 TIPO DE LOCAL DE ENTREGA</label>
         <div class="tipo-residencia">
             <button class="btn-selecao" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
             <button class="btn-selecao" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
@@ -116,7 +120,7 @@
 <div id="avisoLucas" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: var(--verde-frete);">TUDO CERTO!</h2>
-        <p>Deseja enviar os dados do pedido por WhatsApp?</p>
+        <p>Deseja enviar os dados do pedido para o WhatsApp?</p>
         <button class="btn-whatsapp-3d" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
         <button class="btn-voltar" onclick="fecharModal()">VOLTAR</button>
     </div>
@@ -124,6 +128,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=10"></script>
+<script src="script.js?v=12"></script>
 </body>
 </html>
