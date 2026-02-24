@@ -1,14 +1,7 @@
 :root { 
-    --bg: #0a0a0c; 
-    --card: #151518; 
-    --accent: #2ecc71; /* Accent global agora é verde */
-    --text: #ffffff; 
-    --verde-frete: #2ecc71; 
-    --verde-dark: #1e8449;
-    --azul-3d: #00d4ff;
-    --whatsapp: #25d366;
-    --whatsapp-dark: #128c7e;
-    --btn-inativo: #1a1a1e;
+    --bg: #0a0a0c; --card: #151518; --accent: #2ecc71; --text: #ffffff; 
+    --verde-frete: #2ecc71; --verde-dark: #1e8449; --azul-3d: #00d4ff;
+    --whatsapp: #25d366; --whatsapp-dark: #128c7e; --btn-inativo: #1a1a1e;
 }
 
 body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
@@ -28,7 +21,6 @@ input { background: #1a1a1e; border: 1px solid #444; color: white; padding: 15px
 input:focus { outline: none; border-color: var(--verde-frete); box-shadow: 0 0 10px rgba(46, 204, 113, 0.3); }
 .row-endereco-num { display: grid; grid-template-columns: 3fr 1fr; gap: 15px; }
 
-/* Botões Cinzas e Inativos por padrão */
 .tipo-residencia, .tipo-busca { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
 .btn-selecao { background: var(--btn-inativo); color: #666; border: 1px solid #333; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.2s; font-size: 13px; text-transform: uppercase; box-shadow: 0 4px 0 #111; }
 .btn-selecao.active { background: var(--verde-frete); color: #000; border-color: var(--verde-frete); box-shadow: 0 5px 0 var(--verde-dark); transform: translateY(-2px); }
@@ -38,27 +30,22 @@ button { border: none; font-weight: 900; cursor: pointer; text-transform: upperc
 
 .btn-3d-green { background: var(--verde-frete); color: #000; box-shadow: 0 6px 0 var(--verde-dark), 0 8px 15px rgba(46, 204, 113, 0.4); border-radius: 12px; padding: 16px; }
 .btn-3d-green:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--verde-dark); }
-
 .btn-whatsapp-3d { background: var(--whatsapp); color: white; box-shadow: 0 6px 0 var(--whatsapp-dark), 0 8px 20px rgba(37, 211, 102, 0.4); border-radius: 12px; padding: 18px; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 .btn-whatsapp-3d:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--whatsapp-dark); }
-
 .btn-clear { background: #222; color: #aaa; padding: 14px; border-radius: 10px; border: 1px solid #444; box-shadow: 0 4px 0 #111; }
 .btn-clear:active { transform: translateY(2px); box-shadow: 0 2px 0 #111; }
 
 #campo-resumo { background: linear-gradient(145deg, #151518, #0a0a0c); padding: 25px 20px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 212, 255, 0.05); text-align: center; margin: 15px 0; }
 .titulo-neon { color: var(--verde-frete); margin-top: 0; margin-bottom: 20px; font-size: 1.3em; letter-spacing: 2px; text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
 .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
 .card-info-3d { background: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.15), 0 5px 15px rgba(0,0,0,0.5); }
 .card-info-3d label { font-size: 11px; color: var(--azul-3d); margin-bottom: 8px; }
 .card-info-3d span { font-size: 1.6em; font-weight: 900; color: #fff; display: block; }
 .valor-destaque { color: var(--verde-frete) !important; font-size: 1.8em !important; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
-
 .bairro-tempo-display { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; }
 .info-item { display: flex; flex-direction: column; align-items: center; }
 .info-text-label { color: #ccc; font-size: 0.8em; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .info-value-neon { color: var(--azul-3d); font-weight: 900; font-size: 1.3em; text-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }
-
 #aviso-taxa { display: none; background: rgba(241, 196, 15, 0.1); color: #f1c40f; border: 1px solid #f1c40f; padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 12px; font-weight: 900; letter-spacing: 1px; }
 
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
@@ -69,3 +56,16 @@ button { border: none; font-weight: 900; cursor: pointer; text-transform: upperc
 
 .icone-mapa-moto { font-size: 32px; line-height: 1; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
 .icone-mapa-casa { font-size: 32px; line-height: 1; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+
+/* ==== NOVO: ESTILOS DO AUTOCOMPLETE ==== */
+.autocomplete-lista {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    background: #1a1a1e; border: 1px solid var(--verde-frete); border-radius: 0 0 10px 10px;
+    z-index: 1000; max-height: 200px; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+}
+.sugestao-item {
+    padding: 12px 15px; border-bottom: 1px solid #333; cursor: pointer;
+    color: #ccc; font-size: 13px; line-height: 1.4; transition: background 0.2s; text-align: left;
+}
+.sugestao-item:hover { background: #2a2a2e; color: #fff; }
+.sugestao-item:last-child { border-bottom: none; }
