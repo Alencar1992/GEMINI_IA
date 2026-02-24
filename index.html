@@ -2,34 +2,109 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏍💨 ALENCAR FRETES - Atualização</title>
-    <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #0f0f11; color: white; text-align: center; 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; height: 100vh; margin: 0; padding: 20px;
-        }
-        .logo { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #ff9f43; box-shadow: 0 0 20px rgba(255, 159, 67, 0.5); margin-bottom: 20px; }
-        h1 { color: #ff9f43; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;}
-        p { color: #ccc; font-size: 1.1em; max-width: 400px; line-height: 1.5; margin-bottom: 30px;}
-        .btn-whatsapp { 
-            background: #25d366; color: white; text-decoration: none; padding: 15px 30px; 
-            border-radius: 10px; font-weight: 900; letter-spacing: 1px;
-            box-shadow: 0 6px 0 #128c7e; transition: all 0.2s;
-        }
-        .btn-whatsapp:active { transform: translateY(4px); box-shadow: 0 2px 0 #128c7e; }
-        .engrenagem { font-size: 3em; animation: girar 3s linear infinite; margin-bottom: 15px;}
-        @keyframes girar { 100% { transform: rotate(360deg); } }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🏍💨 ALENCAR FRETES</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="estilo.css?v=5" />
 </head>
 <body>
-    <div class="engrenagem">⚙️</div>
-    <img src="logo-cowboy-motofrete.png" alt="Logo Alencar Fretes" class="logo" onerror="this.style.display='none'">
-    <h1>Estamos em Manutenção!</h1>
-    <p>O aplicativo do <b>Alencar Fretes</b> está recebendo melhorias para calcular suas rotas com ainda mais precisão. Voltamos em breve!</p>
-    <p style="font-size: 0.9em; color: #888;">Precisa de um frete urgente agora?</p>
-    <a href="https://wa.me/5511981071822?text=Oi%20Alencar,%20vi%20que%20o%20app%20está%20em%20manutenção,%20preciso%20de%20um%20frete!" class="btn-whatsapp">CHAMAR NO WHATSAPP</a>
+
+<div class="header-top">
+    <div class="logo-container"><img src="logo-cowboy-motofrete.png" alt="Logo Alencar Fretes" onerror="this.style.display='none'"></div>
+    <div class="header-title"><h1>ALENCAR FRETES</h1></div>
+</div>
+
+<div id="map"></div>
+
+<div class="container">
+    <div class="row-endereco-num">
+        <div><label>📅 DATA DA ENTREGA</label><input type="date" id="data_entrega"></div>
+        <div><label>⏰ HORÁRIO</label><input type="time" id="hora_entrega"></div>
+    </div>
+    
+    <div><label>👤 CLIENTE</label><input type="text" id="nome_cliente" placeholder="Nome completo"></div>
+    
+    <div class="box-destaque">
+        <label style="text-align: center;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
+        <div class="tipo-busca">
+            <button class="btn-busca active" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
+            <button class="btn-busca" id="btn-por-rua" onclick="selecionarBusca('rua')">Nome da Rua</button>
+        </div>
+    </div>
+
+    <div id="campo-cep" style="display: block;">
+        <div class="row-endereco-num">
+            <div><label>📮 CEP</label><input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia_cep" placeholder="123"></div>
+        </div>
+        <div><label>📍 RUA</label><input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly></div>
+    </div>
+
+    <div id="campo-rua" style="display: none;">
+        <div class="row-endereco-num">
+            <div><label>📍 RUA OU AVENIDA</label><input type="text" id="destino" placeholder="Ex: Av Paulista"></div>
+            <div><label>Nº</label><input type="text" id="num_residencia" placeholder="123"></div>
+        </div>
+    </div>
+
+    <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
+    
+    <div class="botoes-acao">
+        <button class="btn-3d-green" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
+        <button class="btn-clear" onclick="limpar()">🧹 Limpar Tudo</button>
+    </div>
+
+    <div id="campo-resumo">
+        <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-weight: 900; letter-spacing: 1px;">RESUMO DO PEDIDO</h3>
+        <div class="resultado-grid">
+            <div class="card-info-3d"><label>DISTÂNCIA</label><span id="distancia">0.00 <small style="font-size: 0.5em;">KM</small></span></div>
+            <div class="card-info-3d"><label>VALOR TOTAL</label><span id="valor" class="valor-destaque">R$ 0,00</span></div>
+        </div>
+        <div class="bairro-tempo-display">
+            <div class="info-item"><span class="info-text-label">🏘️ Bairro de Destino</span><span class="info-value-neon" id="res-bairro">---</span></div>
+            <div class="info-item"><span class="info-text-label">⏱️ Tempo de Viagem</span><span class="info-value-neon" id="res-tempo">---</span></div>
+        </div>
+        <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
+    </div>
+
+    <div class="box-destaque">
+        <label style="text-align: center;">🏠 TIPO DE LOCAL DE ENTREGA</label>
+        <div class="tipo-residencia">
+            <button class="btn-tipo btn-3d-green active" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
+            <button class="btn-tipo" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
+        </div>
+    </div>
+
+    <div id="dados-apto">
+        <div><label>BLOCO</label><input type="text" id="bloco" placeholder="Ex: B"></div>
+        <div><label>APTO</label><input type="text" id="apto" placeholder="Ex: 101"></div>
+    </div>
+
+    <button class="btn-whatsapp" onclick="prepararEnvio()">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
+</div>
+
+<div id="modalExpediente" class="modal-overlay">
+    <div class="msg-box">
+        <h2>⚠️ ATENÇÃO</h2>
+        <p>A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
+        <button class="btn-3d-green" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
+        <button class="btn-voltar" onclick="fecharModalExpediente()">CANCELAR</button>
+    </div>
+</div>
+
+<div id="avisoLucas" class="modal-overlay">
+    <div class="msg-box">
+        <h2 style="color: var(--accent);">TUDO CERTO!</h2>
+        <p>Deseja enviar os dados do pedido para o WhatsApp?</p>
+        <button class="btn-whatsapp" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
+        <button class="btn-voltar" onclick="fecharModal()">VOLTAR</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script src="script.js?v=5"></script>
 </body>
 </html>
