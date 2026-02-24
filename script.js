@@ -5,28 +5,25 @@ const VALOR_POR_KM = 2.00;
 const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
 const WHATSAPP_NUMERO = "5511981071822";
 
-let tipoResidencia = "casa"; 
-let tipoBusca = "cep"; 
+let tipoResidencia = ""; 
+let tipoBusca = ""; 
 let rotaCalculada = false;
 let bairroGlobal = "";
 let tempoGlobal = "";
 
-// ==========================================
-// INICIALIZAÇÃO DO MAPA (Ícones de Moto e Casa)
-// ==========================================
+// INICIALIZAÇÃO DO MAPA 
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// Criação dos ícones personalizados com Emojis
-const iconeMoto = L.divIcon({ html: '🏍️', className: 'icone-mapa-moto', iconSize: [30, 30], iconAnchor: [15, 15] });
-const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSize: [30, 30], iconAnchor: [15, 15] });
+const iconeMoto = L.divIcon({ html: '🏍️', className: 'icone-mapa-moto', iconSize: [35, 35], iconAnchor: [17, 17] });
+const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSize: [35, 35], iconAnchor: [17, 17] });
 
 let control = L.Routing.control({
     waypoints: [ORIGEM_FIXA],
-    lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.9 }] }, // Linha azul neon
+    lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.9 }] }, 
     createMarker: function(i, wp, n) {
         if (i === 0) {
             return L.marker(wp.latLng, { icon: iconeMoto }).bindPopup("<b>Origem:</b><br>Alencar Fretes");
@@ -40,10 +37,7 @@ let control = L.Routing.control({
     show: false
 }).addTo(map);
 
-
-// ==========================================
-// FUNÇÕES DOS BOTÕES (Sem telas escondidas chatas)
-// ==========================================
+// FUNÇÕES DE BOTÕES E SELEÇÃO
 function selecionarTipo(tipo) {
     tipoResidencia = tipo;
     document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-selecao active' : 'btn-selecao';
@@ -73,6 +67,8 @@ async function buscarCep() {
 }
 
 function validarExpediente() {
+    if (!tipoBusca) return alert("Selecione 'Por CEP' ou 'Nome da Rua' primeiro.");
+    
     const dataVal = document.getElementById('data_entrega').value;
     const horaVal = document.getElementById('hora_entrega').value;
     
@@ -100,35 +96,43 @@ function continuarCalculo() {
 async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
     const textoOriginal = btn.innerHTML;
-    btn.innerHTML = "⏳ CALCULANDO ROTA...";
+    btn.innerHTML = "⏳ CALCULANDO...";
     btn.style.opacity = "0.7";
 
-    // O Segredo: Amarrar com "São Paulo - SP" forçado para o LocationIQ não errar.
     let queryBusca = "";
     if (tipoBusca === 'cep') {
-        queryBusca = `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value}, São Paulo - SP, Brasil`;
+        queryBusca = `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value}, São Paulo, SP, Brasil`;
     } else {
-        queryBusca = `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}, São Paulo - SP, Brasil`;
+        queryBusca = `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}, São Paulo, SP, Brasil`;
     }
     
     try {
-        const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBusca)}&format=json`);
+        // addressdetails=1 garante que a API separe rua de bairro certinho
+        const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBusca)}&format=json&addressdetails=1`);
         const data = await resp.json();
         
         if(data && data.length > 0) {
             const info = data[0];
             
-            if (tipoBusca === 'rua') {
-                const partes = info.display_name.split(',');
-                bairroGlobal = partes[1] ? partes[1].trim() : "São Paulo";
+            // Pega o Bairro Real pela propriedade address
+            if (info.address) {
+                bairroGlobal = info.address.suburb || info.address.neighbourhood || info.address.city_district || info.address.town || "São Paulo";
             }
             
             document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
             
-            // Traça a rota. O mapa será mostrado no evento 'routesfound'
-            control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
+            // PRIMEIRO mostra a div do mapa para ele não bugar o tamanho
+            document.getElementById('campo-resumo').style.display = 'block';
+            document.getElementById('sec-tipo-local').style.display = 'block';
+            
+            // Dá um tempinho mínimo pro navegador renderizar a caixa, arruma o tamanho e desenha a rota
+            setTimeout(() => {
+                map.invalidateSize();
+                control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
+            }, 100);
+
         } else { 
-            alert("Endereço não localizado. Verifique se digitou a rua corretamente."); 
+            alert("Endereço não localizado. Tente digitar o nome da rua mais completo."); 
             btn.innerHTML = textoOriginal; btn.style.opacity = "1";
         }
     } catch (e) { 
@@ -153,32 +157,31 @@ control.on('routesfound', function(e) {
     
     document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
     
-    // Revela a seção de Resumo e Botão do WhatsApp
-    document.getElementById('campo-resumo').style.display = 'block';
-    document.getElementById('sec-tipo-local').style.display = 'block';
-    
-    // Como o mapa estava com display:none, o Leaflet precisa desse comando para se redesenhar no tamanho certo
+    // Auto-Scroll suave para o resumo
     setTimeout(() => {
-        map.invalidateSize();
-        map.fitBounds(routes.bounds, {padding: [30, 30]});
-    }, 200);
-    
+        document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+
     const btn = document.getElementById('btn-calcular');
     btn.innerHTML = "🔄 RECALCULAR FRETE";
     btn.style.opacity = "1";
 
     rotaCalculada = true;
+    
+    // Arruma o zoom perfeitamente na rota
+    setTimeout(() => {
+        map.fitBounds(routes.bounds, {padding: [40, 40]});
+    }, 300);
 });
 
-// ==========================================
 // MÉTODOS DE ENVIO
-// ==========================================
 function limpar() { location.reload(); }
 function fecharModalExpediente() { document.getElementById('modalExpediente').style.display = 'none'; }
 function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
 
 function prepararEnvio() {
-    if (!document.getElementById('nome_cliente').value) return alert("Por favor, preencha o Nome do Cliente no início do formulário!");
+    if (!tipoResidencia) return alert("Por favor, selecione se a entrega é em CASA ou APTO.");
+    if (!document.getElementById('nome_cliente').value) return alert("Por favor, preencha o Nome do Cliente!");
     document.getElementById('avisoLucas').style.display = 'flex';
 }
 
