@@ -10,7 +10,7 @@ let tipoBusca = "";
 let rotaCalculada = false;
 let bairroGlobal = "";
 let tempoGlobal = "";
-let timeoutBusca = null; // Para o autocomplete não travar o celular
+let timeoutBusca = null;
 
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 
@@ -52,7 +52,6 @@ function selecionarBusca(tipo) {
     document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
 }
 
-// ==== NOVO: FUNÇÃO DO AUTOCOMPLETE ====
 async function sugerirEndereco(texto) {
     const lista = document.getElementById('lista-sugestoes');
     if (texto.length < 4) { lista.style.display = 'none'; return; }
@@ -60,7 +59,6 @@ async function sugerirEndereco(texto) {
     clearTimeout(timeoutBusca);
     timeoutBusca = setTimeout(async () => {
         try {
-            // Procura focado em SP para ser mais preciso
             const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
             const resp = await fetch(url);
             const data = await resp.json();
@@ -72,7 +70,6 @@ async function sugerirEndereco(texto) {
                     div.className = 'sugestao-item';
                     div.innerText = item.display_name;
                     div.onclick = () => {
-                        // Ao clicar, pega a rua certinha e esconde a lista
                         const partes = item.display_name.split(',');
                         document.getElementById('destino').value = partes[0].trim();
                         lista.style.display = 'none';
@@ -84,16 +81,15 @@ async function sugerirEndereco(texto) {
                 lista.style.display = 'none';
             }
         } catch (e) { console.error("Erro autocomplete"); }
-    }, 500); // Espera 0.5 seg após a pessoa parar de digitar para poupar limite da API
+    }, 500);
 }
 
-// Esconde a lista se clicar fora do input
 document.addEventListener('click', function(e) {
     if (e.target.id !== 'destino') {
-        document.getElementById('lista-sugestoes').style.display = 'none';
+        const lista = document.getElementById('lista-sugestoes');
+        if(lista) lista.style.display = 'none';
     }
 });
-
 
 async function buscarCep() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
@@ -219,10 +215,20 @@ function prepararEnvio() {
     document.getElementById('avisoLucas').style.display = 'flex';
 }
 
+// FORMATADOR DE DATA ATUALIZADO (Ex: TERÇA-FEIRA, 23 DE FEVEREIRO DE 2026)
 function obterDataFormatada(dataInput) {
     if(!dataInput) return "---";
     const partes = dataInput.split('-');
-    return `${partes[2]}/${partes[1]}/${partes[0]}`; 
+    const ano = partes[0];
+    const mes = parseInt(partes[1], 10) - 1;
+    const dia = parseInt(partes[2], 10);
+    
+    const d = new Date(ano, mes, dia);
+    
+    const diasSemana = ["DOMINGO", "SEGUNDA-FEIRA", "TERÇA-FEIRA", "QUARTA-FEIRA", "QUINTA-FEIRA", "SEXTA-FEIRA", "SÁBADO"];
+    const meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
+    
+    return `${diasSemana[d.getDay()]}, ${dia} DE ${meses[d.getMonth()]} DE ${ano}`;
 }
 
 function finalizarEnvio() {
