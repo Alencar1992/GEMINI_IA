@@ -5,43 +5,99 @@ const VALOR_POR_KM = 2.00;
 const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
 const WHATSAPP_NUMERO = "5511981071822";
 
-let tipoResidencia = "casa"; 
-let tipoBusca = "cep"; 
+let tipoResidencia = ""; // Inicia vazio
+let tipoBusca = ""; // Inicia vazio
 let rotaCalculada = false;
 let bairroGlobal = "";
 let tempoGlobal = "";
 
+// Inicialização do Mapa (Imagem visual do OpenStreetMap para evitar o erro cinza)
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 
-L.tileLayer(`https://{s}.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_TOKEN}`, {
-    attribution: 'LocationIQ'
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
 }).addTo(map);
 
-L.marker(ORIGEM_FIXA).addTo(map).bindPopup("Origem: Fretes").openPopup();
+// Ajuste do texto do marcador de Origem
+L.marker(ORIGEM_FIXA).addTo(map).bindPopup("<b>Origem:</b><br>Av. João Dias, 2074").openPopup();
 
+// Roteamento (Traça a linha azul no mapa)
 let control = L.Routing.control({
     waypoints: [ORIGEM_FIXA],
-    lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.8 }] },
+    lineOptions: { styles: [{ color: '#3b82f6', weight: 5, opacity: 0.9 }] }, // Linha azul corporativa
     createMarker: (i, wp, n) => (i === n - 1) ? L.marker(wp.latLng).bindPopup("Destino do Cliente") : null, 
     addWaypoints: false,
+    routeWhileDragging: false,
     show: false
 }).addTo(map);
 
-function selecionarTipo(tipo) {
-    tipoResidencia = tipo;
-    document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-tipo active' : 'btn-tipo';
-    document.getElementById('btn-apto').className = tipo === 'apto' ? 'btn-tipo active' : 'btn-tipo';
-    document.getElementById('dados-apto').style.display = tipo === 'apto' ? 'grid' : 'none';
+// ==========================================
+// LÓGICA DE EXIBIÇÃO PROGRESSIVA
+// ==========================================
+document.getElementById('data_entrega').addEventListener('change', checarPasso1);
+document.getElementById('hora_entrega').addEventListener('change', checarPasso1);
+document.getElementById('nome_cliente').addEventListener('input', checarPasso1);
+
+function checarPasso1() {
+    const data = document.getElementById('data_entrega').value;
+    const hora = document.getElementById('hora_entrega').value;
+    const nome = document.getElementById('nome_cliente').value;
+    
+    if (data && hora && nome.length > 2) {
+        document.getElementById('sec-passo2').style.display = 'block';
+    }
 }
 
 function selecionarBusca(tipo) {
     tipoBusca = tipo;
-    document.getElementById('btn-por-cep').className = tipo === 'cep' ? 'btn-busca active' : 'btn-busca';
-    document.getElementById('btn-por-rua').className = tipo === 'rua' ? 'btn-busca active' : 'btn-busca';
+    
+    // Atualiza visual dos botões
+    document.getElementById('btn-por-cep').className = tipo === 'cep' ? 'btn-selecao active' : 'btn-selecao';
+    document.getElementById('btn-por-rua').className = tipo === 'rua' ? 'btn-selecao active' : 'btn-selecao';
+    
+    // Mostra os campos correspondentes
+    document.getElementById('sec-passo3').style.display = 'block';
     document.getElementById('campo-cep').style.display = tipo === 'cep' ? 'block' : 'none';
     document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
+    
+    liberarCalculo(); // Recheca se pode liberar o botão de calcular
 }
 
+function liberarCalculo() {
+    let liberado = false;
+    if (tipoBusca === 'cep') {
+        const rua = document.getElementById('rua_pelo_cep').value;
+        const num = document.getElementById('num_residencia_cep').value;
+        if (rua && num) liberado = true;
+    } else if (tipoBusca === 'rua') {
+        const rua = document.getElementById('destino').value;
+        const num = document.getElementById('num_residencia').value;
+        if (rua.length > 3 && num) liberado = true;
+    }
+
+    if (liberado) {
+        document.getElementById('sec-passo4').style.display = 'block';
+    }
+}
+
+function selecionarTipo(tipo) {
+    tipoResidencia = tipo;
+    document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-selecao active' : 'btn-selecao';
+    document.getElementById('btn-apto').className = tipo === 'apto' ? 'btn-selecao active' : 'btn-selecao';
+    
+    const dadosApto = document.getElementById('dados-apto');
+    if(tipo === 'apto') {
+        dadosApto.style.display = 'grid';
+    } else {
+        dadosApto.style.display = 'none';
+        document.getElementById('bloco').value = '';
+        document.getElementById('apto').value = '';
+    }
+}
+
+// ==========================================
+// BUSCA DE ENDEREÇO E ROTA
+// ==========================================
 async function buscarCep() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
     if (cep.length !== 8) return;
@@ -51,6 +107,7 @@ async function buscarCep() {
         if (!data.erro) {
             document.getElementById('rua_pelo_cep').value = data.logradouro;
             bairroGlobal = data.bairro; 
+            liberarCalculo(); // Chama aqui para liberar o botão caso o nº já esteja preenchido
         } else { alert("CEP não encontrado."); }
     } catch (e) { console.error("Erro CEP", e); }
 }
@@ -59,14 +116,6 @@ function validarExpediente() {
     const dataVal = document.getElementById('data_entrega').value;
     const horaVal = document.getElementById('hora_entrega').value;
     
-    if(!dataVal || !horaVal) return alert("Por favor, preencha a Data e o Horário da entrega!");
-    
-    if (tipoBusca === 'cep' && (!document.getElementById('cep').value || !document.getElementById('num_residencia_cep').value)) {
-        return alert("Preencha o CEP e o Número da residência!");
-    } else if (tipoBusca === 'rua' && (!document.getElementById('destino').value || !document.getElementById('num_residencia').value)) {
-        return alert("Preencha a Rua e o Número da residência!");
-    }
-
     const d = new Date(dataVal + 'T' + horaVal);
     if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() < 17) {
         document.getElementById('modalExpediente').style.display = 'flex';
@@ -83,7 +132,7 @@ function continuarCalculo() {
 async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
     const textoOriginal = btn.innerHTML;
-    btn.innerHTML = "⏳ CALCULANDO...";
+    btn.innerHTML = "⏳ CALCULANDO ROTA...";
     btn.style.opacity = "0.7";
 
     let queryBusca = "";
@@ -106,16 +155,19 @@ async function buscarRota() {
             }
             
             document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
+            
+            // Força o mapa a desenhar a rota para o destino
             control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
         } else { 
             alert("Endereço não localizado no mapa. Verifique se a rua está correta."); 
+            btn.innerHTML = textoOriginal;
+            btn.style.opacity = "1";
         }
     } catch (e) { 
         alert("Erro ao localizar endereço. Tente novamente."); 
-    } finally {
         btn.innerHTML = textoOriginal;
         btn.style.opacity = "1";
-    }
+    } 
 }
 
 control.on('routesfound', function(e) {
@@ -132,20 +184,31 @@ control.on('routesfound', function(e) {
     document.getElementById('res-tempo').innerText = tempoGlobal;
     document.getElementById('valor').innerText = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     
-    document.getElementById('campo-resumo').style.display = 'block';
     document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
     
+    // Revela a última seção (Resumo, Local e Envio)
+    document.getElementById('sec-passo5').style.display = 'block';
+    
+    // Restaura o botão
+    const btn = document.getElementById('btn-calcular');
+    btn.innerHTML = "🔄 RECALCULAR FRETE";
+    btn.style.opacity = "1";
+
     rotaCalculada = true;
-    map.fitBounds(routes.bounds, {padding: [30, 30]});
+    
+    // Ajusta a câmera do mapa para ver a origem, a linha azul e o destino juntos
+    map.fitBounds(routes.bounds, {padding: [50, 50]});
 });
 
+// ==========================================
+// ENVIO PARA WHATSAPP E PLANILHA
+// ==========================================
 function limpar() { location.reload(); }
 function fecharModalExpediente() { document.getElementById('modalExpediente').style.display = 'none'; }
 function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
 
 function prepararEnvio() {
-    if (!rotaCalculada) return alert("Por favor, calcule o valor do frete antes de enviar!");
-    if (!document.getElementById('nome_cliente').value) return alert("Informe o nome do cliente!");
+    if (!tipoResidencia) return alert("Por favor, selecione se a entrega é em CASA ou APTO.");
     document.getElementById('avisoLucas').style.display = 'flex';
 }
 
@@ -180,7 +243,7 @@ function finalizarEnvio() {
     let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
     msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A⏱️ *TEMPO ESTIMADO:* ${tempoGlobal}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
     
-    if(tipoResidencia === 'APTO') {
+    if(tipoResidencia === 'apto') {
         msg += `🏢 *LOCAL:* Bloco ${dados.bloco} - Apto ${dados.apto}%0A`;
     }
     
