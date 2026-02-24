@@ -10,6 +10,7 @@ let tipoBusca = "";
 let rotaCalculada = false;
 let bairroGlobal = "";
 let tempoGlobal = "";
+let timeoutBusca = null; // Para o autocomplete não travar o celular
 
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 
@@ -21,7 +22,7 @@ const iconeMoto = L.divIcon({ html: '🏍️', className: 'icone-mapa-moto', ico
 const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSize: [35, 35], iconAnchor: [17, 17] });
 
 let control = L.Routing.control({
-    waypoints: [], // Inicia vazio, preenchemos apenas quando calcular
+    waypoints: [], 
     lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.9 }] }, 
     createMarker: function(i, wp, n) {
         if (i === 0) {
@@ -51,6 +52,49 @@ function selecionarBusca(tipo) {
     document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
 }
 
+// ==== NOVO: FUNÇÃO DO AUTOCOMPLETE ====
+async function sugerirEndereco(texto) {
+    const lista = document.getElementById('lista-sugestoes');
+    if (texto.length < 4) { lista.style.display = 'none'; return; }
+    
+    clearTimeout(timeoutBusca);
+    timeoutBusca = setTimeout(async () => {
+        try {
+            // Procura focado em SP para ser mais preciso
+            const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
+            const resp = await fetch(url);
+            const data = await resp.json();
+            
+            lista.innerHTML = '';
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'sugestao-item';
+                    div.innerText = item.display_name;
+                    div.onclick = () => {
+                        // Ao clicar, pega a rua certinha e esconde a lista
+                        const partes = item.display_name.split(',');
+                        document.getElementById('destino').value = partes[0].trim();
+                        lista.style.display = 'none';
+                    };
+                    lista.appendChild(div);
+                });
+                lista.style.display = 'block';
+            } else {
+                lista.style.display = 'none';
+            }
+        } catch (e) { console.error("Erro autocomplete"); }
+    }, 500); // Espera 0.5 seg após a pessoa parar de digitar para poupar limite da API
+}
+
+// Esconde a lista se clicar fora do input
+document.addEventListener('click', function(e) {
+    if (e.target.id !== 'destino') {
+        document.getElementById('lista-sugestoes').style.display = 'none';
+    }
+});
+
+
 async function buscarCep() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
     if (cep.length !== 8) return;
@@ -59,7 +103,7 @@ async function buscarCep() {
         const data = await resp.json();
         if (!data.erro) {
             document.getElementById('rua_pelo_cep').value = data.logradouro;
-            bairroGlobal = data.bairro; // Salva o bairro oficial do ViaCEP
+            bairroGlobal = data.bairro; 
         } else { alert("CEP não encontrado."); }
     } catch (e) { console.error("Erro CEP"); }
 }
@@ -99,7 +143,6 @@ async function buscarRota() {
 
     let queryBusca = "";
     if (tipoBusca === 'cep') {
-        // Usa apenas espaço (sem vírgula) que a API entende melhor no Brasil
         queryBusca = `${document.getElementById('rua_pelo_cep').value} ${document.getElementById('num_residencia_cep').value} São Paulo`;
     } else {
         queryBusca = `${document.getElementById('destino').value} ${document.getElementById('num_residencia').value} São Paulo`;
@@ -112,21 +155,16 @@ async function buscarRota() {
         if(data && data.length > 0) {
             const info = data[0];
             
-            // Só sobrescreve o bairro se o cliente NÃO buscou por CEP (o ViaCEP é mais confiável)
             if (tipoBusca === 'rua' && info.address) {
                 bairroGlobal = info.address.suburb || info.address.neighbourhood || info.address.city_district || "SÃO PAULO";
             }
             
             document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
             
-            // PRIMEIRO, mostra as divs na tela
             document.getElementById('campo-resumo').style.display = 'block';
             document.getElementById('sec-tipo-local').style.display = 'block';
             
-            // SEGUNDO, avisa o mapa que o tamanho da tela mudou
             map.invalidateSize();
-            
-            // TERCEIRO, traça a rota
             control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
 
         } else { 
@@ -155,12 +193,10 @@ control.on('routesfound', function(e) {
     
     document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
     
-    // Rola a tela suavemente para baixo
     setTimeout(() => {
         document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 
-    // Ajusta o zoom do mapa perfeitamente para ver a rota inteira
     setTimeout(() => {
         const bounds = L.latLngBounds(routes.coordinates);
         map.fitBounds(bounds, {padding: [40, 40]});
