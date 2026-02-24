@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=8" />
+    <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
 
@@ -27,12 +27,12 @@
     <div class="box-destaque">
         <label style="text-align: center; font-size: 0.9em;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
         <div class="tipo-busca">
-            <button class="btn-selecao active" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
+            <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
             <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">Nome da Rua</button>
         </div>
     </div>
 
-    <div id="campo-cep" style="display: block;">
+    <div id="campo-cep" style="display: none;">
         <div class="row-endereco-num">
             <div><label>📮 CEP</label><input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()"></div>
             <div><label>Nº</label><input type="text" id="num_residencia_cep" placeholder="Ex: 123"></div>
@@ -50,12 +50,12 @@
     <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
     
     <div class="botoes-acao">
-        <button class="btn-3d-orange" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
+        <button class="btn-3d-green" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
         <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
     </div>
 
     <div id="campo-resumo" style="display: none;">
-        <h3 class="titulo-neon-laranja">RESUMO DO PEDIDO</h3>
+        <h3 class="titulo-neon">RESUMO DO PEDIDO</h3>
         
         <div class="resultado-grid">
             <div class="card-info-3d">
@@ -89,7 +89,7 @@
     <div class="box-destaque" id="sec-tipo-local" style="display: none; margin-top: 15px;">
         <label style="text-align: center;">🏠 TIPO DE LOCAL DE ENTREGA</label>
         <div class="tipo-residencia">
-            <button class="btn-selecao active" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
+            <button class="btn-selecao" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
             <button class="btn-selecao" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
         </div>
         
@@ -108,14 +108,14 @@
     <div class="msg-box">
         <h2 style="color: #f1c40f;">⚠️ ATENÇÃO</h2>
         <p>A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
-        <button class="btn-3d-orange" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
+        <button class="btn-3d-green" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
         <button class="btn-voltar" onclick="fecharModalExpediente()">CANCELAR</button>
     </div>
 </div>
 
 <div id="avisoLucas" class="modal-overlay">
     <div class="msg-box">
-        <h2 style="color: var(--accent);">TUDO CERTO!</h2>
+        <h2 style="color: var(--verde-frete);">TUDO CERTO!</h2>
         <p>Deseja enviar os dados do pedido para o WhatsApp?</p>
         <button class="btn-whatsapp-3d" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
         <button class="btn-voltar" onclick="fecharModal()">VOLTAR</button>
@@ -124,6 +124,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=8"></script>
+<script src="script.js?v=9"></script>
 </body>
 </html>
