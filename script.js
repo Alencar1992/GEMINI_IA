@@ -11,7 +11,6 @@ let rotaCalculada = false;
 let bairroGlobal = "";
 let tempoGlobal = "";
 
-// INICIALIZAÇÃO DO MAPA 
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -22,7 +21,7 @@ const iconeMoto = L.divIcon({ html: '🏍️', className: 'icone-mapa-moto', ico
 const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSize: [35, 35], iconAnchor: [17, 17] });
 
 let control = L.Routing.control({
-    waypoints: [ORIGEM_FIXA],
+    waypoints: [], // Inicia vazio, preenchemos apenas quando calcular
     lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.9 }] }, 
     createMarker: function(i, wp, n) {
         if (i === 0) {
@@ -37,7 +36,6 @@ let control = L.Routing.control({
     show: false
 }).addTo(map);
 
-// FUNÇÕES DE BOTÕES E SELEÇÃO
 function selecionarTipo(tipo) {
     tipoResidencia = tipo;
     document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-selecao active' : 'btn-selecao';
@@ -61,7 +59,7 @@ async function buscarCep() {
         const data = await resp.json();
         if (!data.erro) {
             document.getElementById('rua_pelo_cep').value = data.logradouro;
-            bairroGlobal = data.bairro; 
+            bairroGlobal = data.bairro; // Salva o bairro oficial do ViaCEP
         } else { alert("CEP não encontrado."); }
     } catch (e) { console.error("Erro CEP"); }
 }
@@ -96,40 +94,40 @@ function continuarCalculo() {
 async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
     const textoOriginal = btn.innerHTML;
-    btn.innerHTML = "⏳ CALCULANDO...";
+    btn.innerHTML = "⏳ CALCULANDO ROTA...";
     btn.style.opacity = "0.7";
 
     let queryBusca = "";
     if (tipoBusca === 'cep') {
-        queryBusca = `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value}, São Paulo, SP, Brasil`;
+        // Usa apenas espaço (sem vírgula) que a API entende melhor no Brasil
+        queryBusca = `${document.getElementById('rua_pelo_cep').value} ${document.getElementById('num_residencia_cep').value} São Paulo`;
     } else {
-        queryBusca = `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}, São Paulo, SP, Brasil`;
+        queryBusca = `${document.getElementById('destino').value} ${document.getElementById('num_residencia').value} São Paulo`;
     }
     
     try {
-        // addressdetails=1 garante que a API separe rua de bairro certinho
         const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBusca)}&format=json&addressdetails=1`);
         const data = await resp.json();
         
         if(data && data.length > 0) {
             const info = data[0];
             
-            // Pega o Bairro Real pela propriedade address
-            if (info.address) {
-                bairroGlobal = info.address.suburb || info.address.neighbourhood || info.address.city_district || info.address.town || "São Paulo";
+            // Só sobrescreve o bairro se o cliente NÃO buscou por CEP (o ViaCEP é mais confiável)
+            if (tipoBusca === 'rua' && info.address) {
+                bairroGlobal = info.address.suburb || info.address.neighbourhood || info.address.city_district || "SÃO PAULO";
             }
             
             document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
             
-            // PRIMEIRO mostra a div do mapa para ele não bugar o tamanho
+            // PRIMEIRO, mostra as divs na tela
             document.getElementById('campo-resumo').style.display = 'block';
             document.getElementById('sec-tipo-local').style.display = 'block';
             
-            // Dá um tempinho mínimo pro navegador renderizar a caixa, arruma o tamanho e desenha a rota
-            setTimeout(() => {
-                map.invalidateSize();
-                control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
-            }, 100);
+            // SEGUNDO, avisa o mapa que o tamanho da tela mudou
+            map.invalidateSize();
+            
+            // TERCEIRO, traça a rota
+            control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
 
         } else { 
             alert("Endereço não localizado. Tente digitar o nome da rua mais completo."); 
@@ -157,24 +155,24 @@ control.on('routesfound', function(e) {
     
     document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
     
-    // Auto-Scroll suave para o resumo
+    // Rola a tela suavemente para baixo
     setTimeout(() => {
         document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300);
+    }, 100);
+
+    // Ajusta o zoom do mapa perfeitamente para ver a rota inteira
+    setTimeout(() => {
+        const bounds = L.latLngBounds(routes.coordinates);
+        map.fitBounds(bounds, {padding: [40, 40]});
+    }, 200);
 
     const btn = document.getElementById('btn-calcular');
     btn.innerHTML = "🔄 RECALCULAR FRETE";
     btn.style.opacity = "1";
 
     rotaCalculada = true;
-    
-    // Arruma o zoom perfeitamente na rota
-    setTimeout(() => {
-        map.fitBounds(routes.bounds, {padding: [40, 40]});
-    }, 300);
 });
 
-// MÉTODOS DE ENVIO
 function limpar() { location.reload(); }
 function fecharModalExpediente() { document.getElementById('modalExpediente').style.display = 'none'; }
 function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
