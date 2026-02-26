@@ -132,6 +132,24 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputDataEntrega = document.getElementById('data_entrega');
+        
+        if (inputDataEntrega) {
+            inputDataEntrega.addEventListener('change', function() {
+                // Pega a data selecionada. O formato padrão do HTML é YYYY-MM-DD
+                const dataSelecionada = this.value; 
+                
+                // Verifica se a data termina em 02-27 (27 de Fevereiro)
+                if (dataSelecionada.endsWith('-02-27', '-01-03')) {
+                    alert('⚠️ INDISPONÍVEL!\n\nNão estarei realizando entregas no dia 27/02. Trabalhando no Presencial.');
+                    this.value = ''; // Limpa o campo automaticamente
+                }
+            });
+        }
+    });
+</script>
 <script src="script.js?v=13"></script>
 </body>
 </html>
