@@ -271,3 +271,17 @@ function finalizarEnvio() {
     window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
     fecharModal();
 }
+// Monitora o campo de data para bloquear escolhas específicas imediatamente
+document.addEventListener("DOMContentLoaded", function() {
+    const inputData = document.getElementById('data_entrega');
+    
+    if (inputData) {
+        inputData.addEventListener('change', function() {
+            // Se o cliente escolher dia 07/03/2026
+            if (this.value === '2026-03-07') {
+                alert("⚠️ Data Indisponível, Eu tenho Compromissos o Dia todo!");
+                this.value = ''; // Apaga a data do campo na mesma hora
+            }
+        });
+    }
+});
