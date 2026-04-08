@@ -149,6 +149,39 @@
             });
         }
     });
+        // ... todo o seu código do index fica aqui em cima ...
+
+// --- COLE A FUNÇÃO ESPIÃ AQUI, NO FINALZINHO ---
+async function registrarLog(dadosCalculados) {
+    const urlGAS = "COLE_AQUI_A_SUA_URL_DO_APPS_SCRIPT"; 
+
+    let ipUsuario = "Desconhecido";
+    try {
+        let resIp = await fetch("https://api.ipify.org?format=json");
+        let jsonIp = await resIp.json();
+        ipUsuario = jsonIp.ip;
+    } catch(e) { console.log("IP não capturado"); }
+
+    let pacoteDeDados = {
+        data: new Date().toLocaleString("pt-BR"),
+        ip: ipUsuario,
+        dispositivo: navigator.userAgent, 
+        endereco: dadosCalculados.enderecoCompleto || "Não informado no index",
+        bairro: dadosCalculados.bairro || "Não informado no index",
+        km: dadosCalculados.km,
+        valor: dadosCalculados.valor
+    };
+
+    fetch(urlGAS, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pacoteDeDados)
+    }).catch(e => console.log("Erro silencioso"));
+}
+
+</script> </body>
+</html>
 </script>
 <script src="script.js?v=13"></script>
 </body>
