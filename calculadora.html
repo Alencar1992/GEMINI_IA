@@ -369,33 +369,44 @@
         
         window.open(`https://wa.me/?text=${texto}`, '_blank');
     }
-    // --- FUNÇÃO ESPIÃ PARA REGISTRAR LOGS ---
+   // --- FUNÇÃO ESPIÃ PARA REGISTRAR LOGS (VISUALIZAÇÃO LIMPA) ---
 async function registrarLog(dadosCalculados) {
-    // COLE AQUI O LINK QUE VOCÊ COPIOU NO PASSO 1
-    const urlGAS = "COLE_AQUI_A_SUA_URL_DO_APPS_SCRIPT"; 
+    // ⚠️ ALENCAR: COLOQUE A SUA URL DO APPS SCRIPT AQUI ENTRE AS ASPAS!
+    const urlGAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
 
     let ipUsuario = "Desconhecido";
     try {
-        // Tenta pegar o IP de quem está acessando
         let resIp = await fetch("https://api.ipify.org?format=json");
         let jsonIp = await resIp.json();
         ipUsuario = jsonIp.ip;
     } catch(e) { console.log("IP não capturado"); }
 
+    // Limpa e traduz o tipo de aparelho para a planilha
+    let textoDispositivo = navigator.userAgent;
+    let dispFormatado = "📱 Outro/Desconhecido";
+    if (/android/i.test(textoDispositivo)) {
+        dispFormatado = "📱 Celular Android";
+    } else if (/iPad|iPhone|iPod/.test(textoDispositivo)) {
+        dispFormatado = "🍎 iPhone / iPad";
+    } else if (/windows/i.test(textoDispositivo)) {
+        dispFormatado = "💻 Computador Windows";
+    } else if (/mac/i.test(textoDispositivo)) {
+        dispFormatado = "💻 Computador Mac";
+    }
+
     let pacoteDeDados = {
         data: new Date().toLocaleString("pt-BR"),
         ip: ipUsuario,
-        dispositivo: navigator.userAgent, // Mostra se é Android, iPhone, Windows, etc.
+        dispositivo: dispFormatado, // Vai aparecer bonitinho na planilha
         endereco: dadosCalculados.enderecoCompleto,
         bairro: dadosCalculados.bairro,
         km: dadosCalculados.km,
         valor: dadosCalculados.valor
     };
 
-    // Manda os dados para o Google Sheets sem o usuário perceber
     fetch(urlGAS, {
         method: "POST",
-        mode: "no-cors", // Ignora bloqueios de segurança entre domínios diferentes
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pacoteDeDados)
     }).catch(e => console.log("Erro silencioso"));
