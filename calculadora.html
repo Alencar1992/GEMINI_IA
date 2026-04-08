@@ -335,12 +335,17 @@
         document.getElementById('res-tempo').innerText = `${tempo} MIN`;
         document.getElementById('res-valor').innerText = valorFormatado;
         
+        // ... (seu código original) ...
         document.getElementById('res-endereco-print').innerText = dadosCalculados.enderecoCompleto.toUpperCase();
         document.getElementById('res-bairro-print').innerText = dadosCalculados.bairro.toUpperCase();
 
         dadosCalculados.km = km;
         dadosCalculados.tempo = tempo;
         dadosCalculados.valor = valorFormatado;
+        
+        // ---> ADICIONE ESTA LINHA AQUI <---
+        registrarLog(dadosCalculados);
+        // ----------------------------------
         
         setTimeout(() => map.fitBounds(L.latLngBounds(routes.coordinates), {padding: [20, 20]}), 400);
 
@@ -364,6 +369,37 @@
         
         window.open(`https://wa.me/?text=${texto}`, '_blank');
     }
+    // --- FUNÇÃO ESPIÃ PARA REGISTRAR LOGS ---
+async function registrarLog(dadosCalculados) {
+    // COLE AQUI O LINK QUE VOCÊ COPIOU NO PASSO 1
+    const urlGAS = "COLE_AQUI_A_SUA_URL_DO_APPS_SCRIPT"; 
+
+    let ipUsuario = "Desconhecido";
+    try {
+        // Tenta pegar o IP de quem está acessando
+        let resIp = await fetch("https://api.ipify.org?format=json");
+        let jsonIp = await resIp.json();
+        ipUsuario = jsonIp.ip;
+    } catch(e) { console.log("IP não capturado"); }
+
+    let pacoteDeDados = {
+        data: new Date().toLocaleString("pt-BR"),
+        ip: ipUsuario,
+        dispositivo: navigator.userAgent, // Mostra se é Android, iPhone, Windows, etc.
+        endereco: dadosCalculados.enderecoCompleto,
+        bairro: dadosCalculados.bairro,
+        km: dadosCalculados.km,
+        valor: dadosCalculados.valor
+    };
+
+    // Manda os dados para o Google Sheets sem o usuário perceber
+    fetch(urlGAS, {
+        method: "POST",
+        mode: "no-cors", // Ignora bloqueios de segurança entre domínios diferentes
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pacoteDeDados)
+    }).catch(e => console.log("Erro silencioso"));
+}
 </script>
 </body>
 </html>
