@@ -304,12 +304,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ==========================================
-// ---> MOTOR DO ESPIÃO <---
+// ---> MOTOR DO ESPIÃO (VISUALIZAÇÃO LIMPA) <---
 // ==========================================
 async function registrarLog(km, valor, endereco, bairro) {
-    // ⚠️ ALENCAR: COLOQUE AQUI DENTRO DAS ASPAS A URL DO SEU APPS SCRIPT!
+    // ⚠️ ALENCAR: NÃO ESQUEÇA DE COLAR A SUA URL DO APPS SCRIPT AQUI DENTRO DAS ASPAS!
     const urlGAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
 
+    // 1. Tenta pegar o IP
     let ipUsuario = "Desconhecido";
     try {
         let resIp = await fetch("https://api.ipify.org?format=json");
@@ -317,16 +318,31 @@ async function registrarLog(km, valor, endereco, bairro) {
         ipUsuario = jsonIp.ip;
     } catch(e) { console.log("IP não capturado"); }
 
+    // 2. Limpa e traduz o tipo de aparelho para a planilha
+    let textoDispositivo = navigator.userAgent;
+    let dispFormatado = "📱 Outro/Desconhecido";
+    if (/android/i.test(textoDispositivo)) {
+        dispFormatado = "📱 Celular Android";
+    } else if (/iPad|iPhone|iPod/.test(textoDispositivo)) {
+        dispFormatado = "🍎 iPhone / iPad";
+    } else if (/windows/i.test(textoDispositivo)) {
+        dispFormatado = "💻 Computador Windows";
+    } else if (/mac/i.test(textoDispositivo)) {
+        dispFormatado = "💻 Computador Mac";
+    }
+
+    // 3. Monta o pacote de dados apenas com o necessário
     let pacoteDeDados = {
         data: new Date().toLocaleString("pt-BR"),
         ip: ipUsuario,
-        dispositivo: navigator.userAgent, 
+        dispositivo: dispFormatado, // Vai aparecer limpo na planilha
         endereco: endereco,
         bairro: bairro,
         km: km,
         valor: valor
     };
 
+    // Envia para o Google Sheets
     fetch(urlGAS, {
         method: "POST",
         mode: "no-cors",
