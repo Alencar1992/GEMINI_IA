@@ -11,6 +11,21 @@
 </head>
 <body>
 
+<div id="modalSistemaInativo" class="modal-overlay" style="display: flex; z-index: 9999; background: rgba(0,0,0,0.95); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center;">
+    <div class="msg-box" style="border: 2px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.5); background: #1a1a1a; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center;">
+        <h2 style="color: #ff4757; margin-bottom: 15px; cursor: pointer;" ondblclick="document.getElementById('modalSistemaInativo').style.display='none'">⚠️ 🏍💨 ALENCAR FRETES TEMPORARIAMENTE INATIVO ⚠️</h2>
+        <p style="font-size: 1.1em; line-height: 1.5; margin-bottom: 20px; color: #fff;">
+            No momento, não estou operando com o cálculo automático de entregas por aqui.
+        </p>
+        <p style="font-size: 1em; margin-bottom: 25px; color: #ddd;">
+            Se precisar de algum serviço de frete, clique no botão abaixo para me mandar um WhatsApp. Assim verificamos a disponibilidade!
+        </p>
+        
+        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Abri o app e vi que está pausado. Gostaria de verificar a disponibilidade para um frete." class="btn-whatsapp-3d" style="text-decoration: none; display: block; text-align: center; padding: 15px; font-size: 1.1em;">
+            📱 FALAR COM O LUCAS
+        </a>
+    </div>
+</div>
 <div class="header-top">
     <div class="logo-container"><img src="logo-cowboy-motofrete.png" alt="Logo Alencar Fretes" onerror="this.style.display='none'"></div>
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
@@ -21,8 +36,7 @@
     <div>
         <label>📅 DATA DA ENTREGA</label>
         <input type="date" id="data_entrega">
-      <!--  <small style="color: #ff4757; font-weight: bold; display: block; margin-top: 5px; text-align: center;">⚠️No Dia 01/03 - DOMINGO, INDISPONIVEL PARA ENTREGA! </small>-->
-    </div>
+      </div>
     <div><label>⏰ HORÁRIO</label><input type="time" id="hora_entrega"></div>
 </div>
     
@@ -149,7 +163,6 @@
             });
         }
     });
-        // ... todo o seu código do index fica aqui em cima ...
 
 // --- COLE A FUNÇÃO ESPIÃ AQUI, NO FINALZINHO ---
 async function registrarLog(dadosCalculados) {
@@ -180,8 +193,6 @@ async function registrarLog(dadosCalculados) {
     }).catch(e => console.log("Erro silencioso"));
 }
 
-</script> </body>
-</html>
 </script>
 <script src="script.js?v=13"></script>
 </body>
