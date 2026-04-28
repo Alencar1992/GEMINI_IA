@@ -167,6 +167,14 @@
     </div>
 </div>
 
+<div id="modalLimiteIp" class="modal-overlay">
+    <div class="msg-box-alerta">
+        <h2>⚠️ LIMITE ATINGIDO</h2>
+        <p>OBRIGADO POR USAR NOSSO SISTEMA.<br><br>Você atingiu o limite máximo de consultas por hoje.</p>
+        <button class="btn-fechar-alerta" onclick="document.getElementById('modalLimiteIp').style.display = 'none'">FECHAR</button>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -177,8 +185,8 @@
     const VALOR_POR_KM = 2.00;
     const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
     
-    // Lista de Cidades Permitidas (Embu e Embu das Artes cobrem a mesma área)
     const CIDADES_PERMITIDAS = ["sao paulo", "taboao da serra", "itapecerica da serra", "embu das artes", "embu"];
+    const URL_GAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec";
     
     let tipoAtual = '';
     let dadosCalculados = {};
@@ -253,9 +261,36 @@
         } catch (e) { console.error("Erro no CEP"); }
     }
 
+    // --- NOVA FUNÇÃO PARA REGISTRAR TENTATIVAS BLOQUEADAS ---
+    function enviarLogBloqueio(ipBloqueado, enderecoBuscado) {
+        let textoDispositivo = navigator.userAgent;
+        let dispFormatado = "📱 Outro/Desconhecido";
+        if (/android/i.test(textoDispositivo)) { dispFormatado = "📱 Celular Android"; }
+        else if (/iPad|iPhone|iPod/.test(textoDispositivo)) { dispFormatado = "🍎 iPhone / iPad"; }
+        else if (/windows/i.test(textoDispositivo)) { dispFormatado = "💻 Computador Windows"; }
+        else if (/mac/i.test(textoDispositivo)) { dispFormatado = "💻 Computador Mac"; }
+
+        let pacoteDeDados = {
+            data: new Date().toLocaleString("pt-BR"),
+            ip: ipBloqueado,
+            dispositivo: dispFormatado,
+            endereco: enderecoBuscado,
+            bairro: "Não consultado",
+            km: "0",
+            valor: "BLOQUEADO LIMITE IP" // Vai aparecer na sua planilha
+        };
+
+        fetch(URL_GAS, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(pacoteDeDados)
+        }).catch(e => console.log("Erro ao registrar log de bloqueio"));
+    }
+
     async function calcularFrete() {
         const btn = document.getElementById('btn-calcular');
-        btn.innerText = "⏳ CALCULANDO...";
+        btn.innerText = "⏳ VERIFICANDO...";
         
         let enderecoBusca = "";
         let numeroBusca = "";
@@ -274,8 +309,31 @@
             numeroBusca = num;
         }
 
+        // --- INÍCIO DA VERIFICAÇÃO DE LIMITE POR IP ---
+        let ipAtual = "Desconhecido";
         try {
-            // Nova tática: limit=10 traz até 10 resultados para a mesma rua
+            let resIp = await fetch("https://api.ipify.org?format=json");
+            let jsonIp = await resIp.json();
+            ipAtual = jsonIp.ip;
+        } catch(e) { console.log("IP não capturado"); }
+
+        let dataHoje = new Date().toLocaleDateString("pt-BR");
+        let registroUso = JSON.parse(localStorage.getItem("uso_frete")) || {};
+
+        // Se o IP e a Data forem iguais aos salvos, e já usou 1 vez, BLOQUEIA
+        if (registroUso.ip === ipAtual && registroUso.data === dataHoje && registroUso.consultas >= 1) {
+            document.getElementById('modalLimiteIp').style.display = 'flex';
+            btn.innerText = "📍 CALCULAR ROTA";
+            
+            // Envia o log para a planilha informando o bloqueio e qual endereço foi tentado
+            enviarLogBloqueio(ipAtual, `${enderecoBusca} (BLOQUEADO)`);
+            return; // Impede que o código continue e calcule a rota
+        }
+        // --- FIM DA VERIFICAÇÃO ---
+
+        btn.innerText = "⏳ CALCULANDO...";
+
+        try {
             const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(enderecoBusca)}&format=json&addressdetails=1&limit=10`);
             const data = await resp.json();
             
@@ -283,28 +341,30 @@
                 let localValido = null;
 
                 if (tipoAtual === 'rua') {
-                    // Busca silenciosa: verifica qual dos 10 resultados está na área atendida
                     for (let i = 0; i < data.length; i++) {
                         const address = data[i].address || {};
                         const cidadeEncontrada = normalizarTexto(address.city || address.town || address.municipality || address.village || "");
                         
                         if (CIDADES_PERMITIDAS.includes(cidadeEncontrada)) {
-                            localValido = data[i]; // Achou o certo!
+                            localValido = data[i]; 
                             bairroAtual = address.suburb || address.neighbourhood || address.city_district || address.town || "Não Identificado";
                             break; 
                         }
                     }
 
-                    // Se rodou as 10 opções e nenhuma serve, aí bloqueia
                     if (!localValido) {
                         mostrarAlertaArea();
                         btn.innerText = "📍 CALCULAR ROTA";
                         return;
                     }
                 } else {
-                    // Se for via CEP, já passou no filtro antes, usa o primeiro
                     localValido = data[0];
                 }
+
+                // --- ATUALIZA A COTA DE USO ---
+                // Se chegou até aqui com sucesso, registra que usou o app hoje
+                localStorage.setItem("uso_frete", JSON.stringify({ ip: ipAtual, data: dataHoje, consultas: 1 }));
+                // ------------------------------
 
                 const destino = L.latLng(localValido.lat, localValido.lon);
                 control.setWaypoints([ORIGEM_FIXA, destino]);
@@ -312,6 +372,7 @@
                 const nomeRua = tipoAtual === 'cep' ? document.getElementById('rua-oculta-cep').value : document.getElementById('input-rua').value;
                 dadosCalculados.enderecoCompleto = `${nomeRua}, ${numeroBusca}`;
                 dadosCalculados.bairro = bairroAtual;
+                dadosCalculados.ip_registrado = ipAtual; // Guarda o IP para o log final
                 
                 document.getElementById('campo-resumo').style.display = 'block';
                 setTimeout(() => map.invalidateSize(), 300); 
@@ -335,7 +396,6 @@
         document.getElementById('res-tempo').innerText = `${tempo} MIN`;
         document.getElementById('res-valor').innerText = valorFormatado;
         
-        // ... (seu código original) ...
         document.getElementById('res-endereco-print').innerText = dadosCalculados.enderecoCompleto.toUpperCase();
         document.getElementById('res-bairro-print').innerText = dadosCalculados.bairro.toUpperCase();
 
@@ -343,12 +403,9 @@
         dadosCalculados.tempo = tempo;
         dadosCalculados.valor = valorFormatado;
         
-        // ---> ADICIONE ESTA LINHA AQUI <---
         registrarLog(dadosCalculados);
-        // ----------------------------------
         
         setTimeout(() => map.fitBounds(L.latLngBounds(routes.coordinates), {padding: [20, 20]}), 400);
-
         setTimeout(() => gerarImagemPrint(), 1500);
     });
 
@@ -364,53 +421,36 @@
 
     function enviarWhatsapp() {
         if(!dadosCalculados.km) return;
-        
         const texto = `*ORÇAMENTO DE FRETE:*%0A%0A📍 *Destino:* ${dadosCalculados.enderecoCompleto}%0A🏘️ *Bairro:* ${dadosCalculados.bairro}%0A📏 *Distância:* ${dadosCalculados.km} KM%0A⏱️ *Tempo Estimado:* ${dadosCalculados.tempo} Minutos%0A💰 *Valor Total:* ${dadosCalculados.valor}%0A%0A_Posso confirmar o agendamento?_`;
-        
         window.open(`https://wa.me/?text=${texto}`, '_blank');
     }
-   // --- FUNÇÃO ESPIÃ PARA REGISTRAR LOGS (VISUALIZAÇÃO LIMPA) ---
-async function registrarLog(dadosCalculados) {
-    // ⚠️ ALENCAR: COLOQUE A SUA URL DO APPS SCRIPT AQUI ENTRE AS ASPAS!
-    const urlGAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
 
-    let ipUsuario = "Desconhecido";
-    try {
-        let resIp = await fetch("https://api.ipify.org?format=json");
-        let jsonIp = await resIp.json();
-        ipUsuario = jsonIp.ip;
-    } catch(e) { console.log("IP não capturado"); }
+    // --- FUNÇÃO DE LOG NORMAL DE SUCESSO ---
+    async function registrarLog(dadosCalculados) {
+        let textoDispositivo = navigator.userAgent;
+        let dispFormatado = "📱 Outro/Desconhecido";
+        if (/android/i.test(textoDispositivo)) { dispFormatado = "📱 Celular Android"; }
+        else if (/iPad|iPhone|iPod/.test(textoDispositivo)) { dispFormatado = "🍎 iPhone / iPad"; }
+        else if (/windows/i.test(textoDispositivo)) { dispFormatado = "💻 Computador Windows"; }
+        else if (/mac/i.test(textoDispositivo)) { dispFormatado = "💻 Computador Mac"; }
 
-    // Limpa e traduz o tipo de aparelho para a planilha
-    let textoDispositivo = navigator.userAgent;
-    let dispFormatado = "📱 Outro/Desconhecido";
-    if (/android/i.test(textoDispositivo)) {
-        dispFormatado = "📱 Celular Android";
-    } else if (/iPad|iPhone|iPod/.test(textoDispositivo)) {
-        dispFormatado = "🍎 iPhone / iPad";
-    } else if (/windows/i.test(textoDispositivo)) {
-        dispFormatado = "💻 Computador Windows";
-    } else if (/mac/i.test(textoDispositivo)) {
-        dispFormatado = "💻 Computador Mac";
+        let pacoteDeDados = {
+            data: new Date().toLocaleString("pt-BR"),
+            ip: dadosCalculados.ip_registrado, // Usa o IP já capturado lá em cima
+            dispositivo: dispFormatado,
+            endereco: dadosCalculados.enderecoCompleto,
+            bairro: dadosCalculados.bairro,
+            km: dadosCalculados.km,
+            valor: dadosCalculados.valor
+        };
+
+        fetch(URL_GAS, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(pacoteDeDados)
+        }).catch(e => console.log("Erro silencioso"));
     }
-
-    let pacoteDeDados = {
-        data: new Date().toLocaleString("pt-BR"),
-        ip: ipUsuario,
-        dispositivo: dispFormatado, // Vai aparecer bonitinho na planilha
-        endereco: dadosCalculados.enderecoCompleto,
-        bairro: dadosCalculados.bairro,
-        km: dadosCalculados.km,
-        valor: dadosCalculados.valor
-    };
-
-    fetch(urlGAS, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pacoteDeDados)
-    }).catch(e => console.log("Erro silencioso"));
-}
 </script>
 </body>
 </html>
