@@ -11,21 +11,23 @@
 </head>
 <body>
 
-<div id="modalSistemaInativo" class="modal-overlay" style="display: flex; z-index: 9999; background: rgba(0,0,0,0.95); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center;">
+<div id="modalLimiteSemanal" class="modal-overlay" style="display: none; z-index: 9999; background: rgba(0,0,0,0.95); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center;">
     <div class="msg-box" style="border: 2px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.5); background: #1a1a1a; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center;">
-        <h2 style="color: #ff4757; margin-bottom: 15px; cursor: pointer;" ondblclick="document.getElementById('modalSistemaInativo').style.display='none'">⚠️ 🏍💨 ALENCAR FRETES TEMPORARIAMENTE INATIVO ⚠️</h2>
+        <h2 style="color: #ff4757; margin-bottom: 15px;">⚠️ LIMITE DE CONSULTA EXCEDIDO ⚠️</h2>
         <p style="font-size: 1.1em; line-height: 1.5; margin-bottom: 20px; color: #fff;">
-            No momento, não estou operando com o cálculo automático de entregas por aqui.
+            Você atingiu o limite máximo.
         </p>
         <p style="font-size: 1em; margin-bottom: 25px; color: #ddd;">
-            Se precisar de algum serviço de frete, clique no botão abaixo para me mandar um WhatsApp. Assim verificamos a disponibilidade!
+            Mas não se preocupe! Clique no botão abaixo para falar comigo no WhatsApp.
         </p>
         
-        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Abri o app e vi que está pausado. Gostaria de verificar a disponibilidade para um frete." class="btn-whatsapp-3d" style="text-decoration: none; display: block; text-align: center; padding: 15px; font-size: 1.1em;">
+        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp-3d" style="text-decoration: none; display: block; text-align: center; padding: 15px; font-size: 1.1em;">
             📱 FALAR COM O LUCAS
         </a>
+        <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" style="background: none; border: none; color: #888; margin-top: 15px; cursor: pointer; text-decoration: underline;">Voltar ao aplicativo</button>
     </div>
 </div>
+
 <div class="header-top">
     <div class="logo-container"><img src="logo-cowboy-motofrete.png" alt="Logo Alencar Fretes" onerror="this.style.display='none'"></div>
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
@@ -72,7 +74,7 @@
     <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
     
     <div class="botoes-acao">
-        <button class="btn-3d-green" id="btn-calcular" onclick="validarExpediente()">🚀 CALCULAR O FRETE</button>
+        <button class="btn-3d-green" id="btn-calcular" onclick="iniciarVerificacao()">🚀 CALCULAR O FRETE</button>
         <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
     </div>
 
@@ -152,22 +154,25 @@
         
         if (inputDataEntrega) {
             inputDataEntrega.addEventListener('change', function() {
-                // Pega a data selecionada. O formato padrão do HTML é YYYY-MM-DD
                 const dataSelecionada = this.value; 
-                
-                // Verifica se a data termina em 02-27 (27 de Fevereiro)
                 if (dataSelecionada.endsWith('-02-27', '-01-03')) {
                     alert('⚠️ INDISPONÍVEL!\n\nNão estarei realizando entregas no dia 27/02. Trabalhando no Presencial.');
-                    this.value = ''; // Limpa o campo automaticamente
+                    this.value = ''; 
                 }
             });
         }
     });
 
-// --- COLE A FUNÇÃO ESPIÃ AQUI, NO FINALZINHO ---
-async function registrarLog(dadosCalculados) {
-    const urlGAS = "COLE_AQUI_A_SUA_URL_DO_APPS_SCRIPT"; 
+// ALENCAR: COLE A SUA URL DO WEB APP AQUI!
+const urlGAS = "COLE_AQUI_A_SUA_URL_DO_APPS_SCRIPT"; 
 
+// --- NOVA FUNÇÃO QUE CONTROLA O CLIQUE NO BOTÃO "CALCULAR O FRETE" ---
+async function iniciarVerificacao() {
+    const btn = document.getElementById('btn-calcular');
+    btn.innerText = "⏳ VERIFICANDO ACESSO...";
+    btn.disabled = true;
+
+    // 1. Pega o IP do usuário
     let ipUsuario = "Desconhecido";
     try {
         let resIp = await fetch("https://api.ipify.org?format=json");
@@ -175,7 +180,64 @@ async function registrarLog(dadosCalculados) {
         ipUsuario = jsonIp.ip;
     } catch(e) { console.log("IP não capturado"); }
 
+    // 2. Consulta o Google Apps Script para ver se o IP excedeu o limite
+    try {
+        // Envia um POST com o tipo "verificar_limite"
+        let respostaGas = await fetch(urlGAS, {
+            method: "POST",
+            // IMPORTANTE: Removido "no-cors" aqui para podermos ler a resposta da planilha
+            headers: { "Content-Type": "text/plain" }, 
+            body: JSON.stringify({
+                tipo: "verificar_limite",
+                ip: ipUsuario
+            })
+        });
+
+        let resultado = await respostaGas.json();
+
+        // 3. Verifica a resposta da planilha
+        if (resultado.status === "bloqueado") {
+            // Excedeu as 5 consultas
+            document.getElementById('modalLimiteSemanal').style.display = 'flex';
+            btn.innerText = "🚀 CALCULAR O FRETE";
+            btn.disabled = false;
+            
+            // Registra um log de que houve uma tentativa bloqueada
+            registrarLogBloqueio(ipUsuario);
+            return; // PARA A EXECUÇÃO AQUI, não chama validarExpediente
+        }
+
+        // Se estiver "permitido", o fluxo continua normalmente
+        btn.innerText = "🚀 CALCULAR O FRETE";
+        btn.disabled = false;
+        
+        // CHAMA A SUA FUNÇÃO ORIGINAL DO SCRIPT.JS QUE INICIA O CÁLCULO
+        if (typeof validarExpediente === 'function') {
+            validarExpediente();
+        } else {
+            console.error("Função validarExpediente não encontrada.");
+        }
+
+    } catch (e) {
+        // Se a planilha falhar em responder, permite por garantia para não prejudicar a venda
+        console.error("Erro ao verificar limite na planilha: ", e);
+        btn.innerText = "🚀 CALCULAR O FRETE";
+        btn.disabled = false;
+        if (typeof validarExpediente === 'function') validarExpediente();
+    }
+}
+
+// --- FUNÇÃO PARA REGISTRAR LOG DE SUCESSO (Cálculo Realizado) ---
+async function registrarLog(dadosCalculados) {
+    let ipUsuario = "Desconhecido";
+    try {
+        let resIp = await fetch("https://api.ipify.org?format=json");
+        let jsonIp = await resIp.json();
+        ipUsuario = jsonIp.ip;
+    } catch(e) { }
+
     let pacoteDeDados = {
+        tipo: "log_sucesso", // Informa à planilha que é um registro de cálculo concluído
         data: new Date().toLocaleString("pt-BR"),
         ip: ipUsuario,
         dispositivo: navigator.userAgent, 
@@ -190,7 +252,28 @@ async function registrarLog(dadosCalculados) {
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pacoteDeDados)
-    }).catch(e => console.log("Erro silencioso"));
+    }).catch(e => console.log("Erro silencioso no log"));
+}
+
+// --- FUNÇÃO PARA REGISTRAR LOG DE BLOQUEIO ---
+async function registrarLogBloqueio(ipBloqueado) {
+    let pacoteDeDados = {
+        tipo: "log_bloqueio", // Informa à planilha que foi uma tentativa barrada
+        data: new Date().toLocaleString("pt-BR"),
+        ip: ipBloqueado,
+        dispositivo: navigator.userAgent,
+        endereco: "TENTATIVA BLOQUEADA",
+        bairro: "-",
+        km: "0",
+        valor: "BLOQUEADO"
+    };
+
+    fetch(urlGAS, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pacoteDeDados)
+    }).catch(e => console.log("Erro silencioso no log de bloqueio"));
 }
 
 </script>
