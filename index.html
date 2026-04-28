@@ -164,7 +164,7 @@
     });
 
 // ALENCAR: COLE A SUA URL DO WEB APP AQUI!
-const urlGAS = "COLE_AQUI_A_SUA_URL_DO_APPS_SCRIPT"; 
+const urlGAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
 
 // --- NOVA FUNÇÃO QUE CONTROLA O CLIQUE NO BOTÃO "CALCULAR O FRETE" ---
 async function iniciarVerificacao() {
@@ -180,20 +180,19 @@ async function iniciarVerificacao() {
         ipUsuario = jsonIp.ip;
     } catch(e) { console.log("IP não capturado"); }
 
-    // 2. Consulta o Google Apps Script para ver se o IP excedeu o limite
+    // 2. Consulta a planilha com redirecionamento correto para burlar CORS
     try {
-        // Envia um POST com o tipo "verificar_limite"
+        let pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipUsuario });
+        
         let respostaGas = await fetch(urlGAS, {
+            redirect: "follow", 
             method: "POST",
-            // IMPORTANTE: Removido "no-cors" aqui para podermos ler a resposta da planilha
-            headers: { "Content-Type": "text/plain" }, 
-            body: JSON.stringify({
-                tipo: "verificar_limite",
-                ip: ipUsuario
-            })
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: pacote
         });
 
-        let resultado = await respostaGas.json();
+        let resultadoTexto = await respostaGas.text();
+        let resultado = JSON.parse(resultadoTexto);
 
         // 3. Verifica a resposta da planilha
         if (resultado.status === "bloqueado") {
@@ -202,16 +201,15 @@ async function iniciarVerificacao() {
             btn.innerText = "🚀 CALCULAR O FRETE";
             btn.disabled = false;
             
-            // Registra um log de que houve uma tentativa bloqueada
+            // Registra tentativa bloqueada (só na planilha, sem mandar e-mail)
             registrarLogBloqueio(ipUsuario);
-            return; // PARA A EXECUÇÃO AQUI, não chama validarExpediente
+            return; 
         }
 
-        // Se estiver "permitido", o fluxo continua normalmente
+        // Permitido!
         btn.innerText = "🚀 CALCULAR O FRETE";
         btn.disabled = false;
         
-        // CHAMA A SUA FUNÇÃO ORIGINAL DO SCRIPT.JS QUE INICIA O CÁLCULO
         if (typeof validarExpediente === 'function') {
             validarExpediente();
         } else {
@@ -219,8 +217,7 @@ async function iniciarVerificacao() {
         }
 
     } catch (e) {
-        // Se a planilha falhar em responder, permite por garantia para não prejudicar a venda
-        console.error("Erro ao verificar limite na planilha: ", e);
+        console.error("Erro na verificação da planilha: ", e);
         btn.innerText = "🚀 CALCULAR O FRETE";
         btn.disabled = false;
         if (typeof validarExpediente === 'function') validarExpediente();
