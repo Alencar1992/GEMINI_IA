@@ -5,96 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🏍💨 ALENCAR FRETES</title>
     <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=12" />
-    
-    <style>
-        body {
-            /* Fundo com a imagem solicitada e uma máscara escura para legibilidade */
-            background: linear-gradient(rgba(15, 20, 30, 0.85), rgba(15, 20, 30, 0.95)), url('') no-repeat center center fixed;
-            background-size: cover;
-            color: #ffffff;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        /* Modais Modernos com Glassmorphism */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px); /* Efeito de vidro borrado */
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .modal-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
-
-        .msg-box {
-            background: rgba(30, 35, 45, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            padding: 25px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 420px;
-            text-align: center;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .msg-box {
-            transform: translateY(0);
-        }
-
-        /* Estilização específica do modal de Erro/Limite */
-        .msg-box.danger {
-            border: 1px solid #ff4757;
-            box-shadow: 0 0 20px rgba(255, 71, 87, 0.2);
-        }
-
-        .btn-whatsapp-3d {
-            background: linear-gradient(145deg, #25D366, #128C7E);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-decoration: none;
-            display: block;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-whatsapp-3d:active {
-            transform: scale(0.98);
-        }
-    </style>
+    <link rel="stylesheet" href="style.css?v=15" />
 </head>
 <body>
 
 <div id="modalLimiteSemanal" class="modal-overlay">
     <div class="msg-box danger">
         <h2 style="color: #ff4757; margin-bottom: 15px;">⚠️ LIMITE EXCEDIDO</h2>
-        <p style="font-size: 1.1em; line-height: 1.5; margin-bottom: 10px;">
-            Você atingiu o limite máximo de consultas do sistema.
-        </p>
-        <p style="font-size: 0.95em; margin-bottom: 25px; color: #aaa;">
-            Mas não se preocupe! Clique no botão abaixo para falar direto comigo.
-        </p>
-        
-        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp-3d">
-            📱 FALAR COM O LUCAS
-        </a>
-        <button onclick="fecharModalModerno('modalLimiteSemanal')" style="background: none; border: none; color: #888; margin-top: 20px; cursor: pointer; text-decoration: underline;">Voltar ao aplicativo</button>
+        <p>Você atingiu o limite máximo de consultas do sistema.</p>
+        <p style="font-size: 0.9em; margin-bottom: 20px; color: #aaa;">Clique no botão abaixo para falar direto comigo.</p>
+        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp">📱 FALAR COM O LUCAS</a>
+        <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" class="btn-txt">Voltar ao aplicativo</button>
     </div>
 </div>
 
@@ -102,8 +26,8 @@
     <div class="msg-box">
         <h2 style="color: #f1c40f; margin-bottom: 15px;">⚠️ ATENÇÃO</h2>
         <p style="margin-bottom: 20px;">A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
-        <button class="btn-3d-green" onclick="continuarCalculo()" style="width: 100%; margin-bottom: 10px;">✅ OK, CONTINUAR</button>
-        <button class="btn-voltar" onclick="fecharModalModerno('modalExpediente')" style="width: 100%; background: transparent; color: #aaa; border: 1px solid #555;">CANCELAR</button>
+        <button class="btn-green" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
+        <button class="btn-outline" onclick="fecharModalExpediente()">CANCELAR</button>
     </div>
 </div>
 
@@ -111,8 +35,8 @@
     <div class="msg-box">
         <h2 style="color: #2ecc71; margin-bottom: 15px;">TUDO CERTO!</h2>
         <p style="margin-bottom: 20px;">Deseja enviar os dados do pedido para o WhatsApp?</p>
-        <button class="btn-whatsapp-3d" onclick="finalizarEnvio()" style="margin-bottom: 10px;">✅ SIM, ENVIAR AGORA</button>
-        <button class="btn-voltar" onclick="fecharModalModerno('avisoLucas')" style="width: 100%; background: transparent; color: #aaa; border: 1px solid #555;">VOLTAR</button>
+        <button class="btn-whatsapp" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
+        <button class="btn-outline" onclick="fecharModal()">VOLTAR</button>
     </div>
 </div>
 
@@ -123,256 +47,128 @@
 
 <div class="container">
     <div class="row-endereco-num">
-        <div>
+        <div class="input-group">
             <label>📅 DATA DA ENTREGA</label>
             <input type="date" id="data_entrega">
         </div>
-        <div>
+        <div class="input-group">
             <label>⏰ HORÁRIO</label>
             <input type="time" id="hora_entrega">
         </div>
     </div>
     
-    <div>
+    <div class="input-group">
         <label>👤 NOME DO CLIENTE</label>
         <input type="text" id="nome_cliente" placeholder="Nome completo" autocomplete="name">
     </div>
     
     <div class="box-destaque">
-        <label style="text-align: center; font-size: 0.9em; display: block; margin-bottom: 10px;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
+        <label style="text-align: center; display: block; margin-bottom: 15px; font-weight: 600; color: #2ecc71;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
         <div class="tipo-busca">
-            <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">Por CEP</button>
-            <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">Nome da Rua</button>
+            <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">POR CEP</button>
+            <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">NOME DA RUA</button>
         </div>
     </div>
 
     <div id="campo-cep" style="display: none;">
         <div class="row-endereco-num">
-            <div><label>📮 CEP</label><input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()" inputmode="numeric"></div>
-            <div><label>Nº</label><input type="text" id="num_residencia_cep" placeholder="Ex: 123"></div>
+            <div class="input-group">
+                <label>📮 CEP</label>
+                <input type="text" id="cep" placeholder="00000-000" onblur="buscarCep()" inputmode="numeric">
+            </div>
+            <div class="input-group">
+                <label>Nº</label>
+                <input type="text" id="num_residencia_cep" placeholder="Ex: 123">
+            </div>
         </div>
-        <div><label>📍 RUA</label><input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly style="background: rgba(255,255,255,0.1);"></div>
+        <div class="input-group">
+            <label>📍 RUA</label>
+            <input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly style="background: rgba(255,255,255,0.05); color: #888;">
+        </div>
     </div>
 
     <div id="campo-rua" style="display: none;">
         <div class="row-endereco-num">
-            <div style="position: relative; flex: 2;">
+            <div class="input-group" style="position: relative; flex: 2;">
                 <label>📍 RUA OU AVENIDA</label>
                 <input type="text" id="destino" placeholder="Comece a digitar..." oninput="sugerirEndereco(this.value)" autocomplete="off">
                 <div id="lista-sugestoes" class="autocomplete-lista"></div>
             </div>
-            <div style="flex: 1;"><label>Nº</label><input type="text" id="num_residencia" placeholder="Ex: 123"></div>
+            <div class="input-group" style="flex: 1;">
+                <label>Nº</label>
+                <input type="text" id="num_residencia" placeholder="Ex: 123">
+            </div>
         </div>
     </div>
 
-    <div><label>🚩 PONTO DE REFERÊNCIA (Opcional)</label><input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..."></div>
+    <div class="input-group">
+        <label>🚩 PONTO DE REFERÊNCIA (Opcional)</label>
+        <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado...">
+    </div>
     
     <div class="botoes-acao">
-        <button class="btn-3d-green" id="btn-calcular" onclick="iniciarVerificacao()">🚀 CALCULAR O FRETE</button>
-        <button class="btn-clear" onclick="limpar()">🧹 Limpar Campos</button>
+        <button class="btn-green shadow-glow" id="btn-calcular" onclick="iniciarVerificacao()">🚀 CALCULAR O FRETE</button>
+        <button class="btn-outline" onclick="limpar()">🧹 Limpar Campos</button>
     </div>
 
     <div id="campo-resumo" style="display: none;">
-        <h3 class="titulo-neon" style="text-align: center; margin: 20px 0;">RESUMO DO PEDIDO</h3>
+        <h3 class="titulo-neon" style="text-align: center; margin: 25px 0;">RESUMO DO PEDIDO</h3>
         
         <div class="resultado-grid">
-            <div class="card-info-3d">
+            <div class="card-info">
                 <label>DISTÂNCIA</label>
-                <span id="distancia">0.00 <small style="font-size: 0.5em;">KM</small></span>
+                <span id="distancia">0.00 <small>KM</small></span>
             </div>
-            <div class="card-info-3d">
+            <div class="card-info destaque">
                 <label>VALOR TOTAL</label>
-                <span id="valor" class="valor-destaque">R$ 0,00</span>
+                <span id="valor">R$ 0,00</span>
             </div>
         </div>
         
-        <div class="bairro-tempo-display" style="margin-top: 15px;">
+        <div class="bairro-tempo-display">
             <div class="info-item">
-                <span class="info-text-label">🏘️ Bairro de Destino</span>
-                <span class="info-value-neon" id="res-bairro">---</span>
+                <span class="info-label">🏘️ Bairro de Destino</span>
+                <span class="info-value" id="res-bairro">---</span>
             </div>
             <div class="info-item">
-                <span class="info-text-label">⏱️ Tempo de Viagem</span>
-                <span class="info-value-neon" id="res-tempo">---</span>
+                <span class="info-label">⏱️ Tempo de Viagem</span>
+                <span class="info-value" id="res-tempo">---</span>
             </div>
         </div>
         
-        <div id="aviso-taxa" style="text-align: center; margin-top: 10px; font-size: 0.9em; color: #f1c40f;">⚠️ TAXA MÍNIMA APLICADA ✅</div>
+        <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
 
-        <div id="mapa-container" style="margin-top: 20px; border-radius: 15px; overflow: hidden; border: 2px solid rgba(0, 212, 255, 0.5); box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);">
-            <div id="map" style="height: 250px;"></div>
+        <div id="mapa-container">
+            <div id="map"></div>
         </div>
     </div>
 
-    <div class="box-destaque" id="sec-tipo-local" style="display: none; margin-top: 20px;">
-        <label style="text-align: center; display: block; margin-bottom: 10px;">🏠 TIPO DE LOCAL DE ENTREGA</label>
+    <div class="box-destaque" id="sec-tipo-local" style="display: none; margin-top: 25px;">
+        <label style="text-align: center; display: block; margin-bottom: 15px; font-weight: 600; color: #2ecc71;">🏠 TIPO DE LOCAL DE ENTREGA</label>
         <div class="tipo-residencia">
             <button class="btn-selecao" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
             <button class="btn-selecao" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
         </div>
         
-        <div id="dados-apto" style="display: none; margin-top: 15px;">
+        <div id="dados-apto" style="display: none; margin-top: 20px;">
             <div class="row-endereco-num">
-                <div><label>BLOCO</label><input type="text" id="bloco" placeholder="Ex: B"></div>
-                <div><label>APTO</label><input type="text" id="apto" placeholder="Ex: 101"></div>
+                <div class="input-group">
+                    <label>BLOCO</label>
+                    <input type="text" id="bloco" placeholder="Ex: B">
+                </div>
+                <div class="input-group">
+                    <label>APTO</label>
+                    <input type="text" id="apto" placeholder="Ex: 101">
+                </div>
             </div>
         </div>
 
-        <button class="btn-whatsapp-3d" onclick="prepararEnvio()" style="margin-top: 20px; width: 100%;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
+        <button class="btn-whatsapp shadow-glow" onclick="prepararEnvio()" style="margin-top: 25px; width: 100%;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script>
-    // --- FUNÇÕES DE INTERFACE MODERNAS ---
-    function abrirModalModerno(id) {
-        const modal = document.getElementById(id);
-        if(modal) {
-            modal.style.display = 'flex';
-            // Pequeno delay para a transição do CSS (fade in) funcionar
-            setTimeout(() => modal.classList.add('active'), 10);
-        }
-    }
-
-    function fecharModalModerno(id) {
-        const modal = document.getElementById(id);
-        if(modal) {
-            modal.classList.remove('active');
-            // Aguarda a animação terminar para ocultar o elemento
-            setTimeout(() => modal.style.display = 'none', 300);
-        }
-    }
-
-    // --- REGRAS DE NEGÓCIO E DATAS ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputDataEntrega = document.getElementById('data_entrega');
-        
-        if (inputDataEntrega) {
-            inputDataEntrega.addEventListener('change', function() {
-                const dataSelecionada = this.value; 
-                // Validação mantida e segura
-                if (dataSelecionada.endsWith('-02-27') || dataSelecionada.endsWith('-01-03')) {
-                    alert('⚠️ INDISPONÍVEL!\n\nNão estarei realizando entregas nestas datas. Trabalhando no Presencial.');
-                    this.value = ''; 
-                }
-            });
-        }
-    });
-
-    const urlGAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
-
-    // --- FUNÇÃO ASSÍNCRONA REFATORADA (Resiliente e com tratamento silencioso) ---
-    async function iniciarVerificacao() {
-        const btn = document.getElementById('btn-calcular');
-        const textoOriginal = btn.innerText;
-        btn.innerText = "⏳ VERIFICANDO...";
-        btn.disabled = true;
-
-        let ipUsuario = "0.0.0.0"; // Fallback padrão seguro
-
-        // Tentativa de buscar IP sem quebrar a tela do usuário se a API cair
-        try {
-            const controleTempo = new AbortController();
-            const idTempo = setTimeout(() => controleTempo.abort(), 3000); // Timeout de 3 seg para não travar o app
-            
-            let resIp = await fetch("https://api.ipify.org?format=json", { signal: controleTempo.signal });
-            clearTimeout(idTempo);
-            
-            if (resIp.ok) {
-                let jsonIp = await resIp.json();
-                ipUsuario = jsonIp.ip || ipUsuario;
-            }
-        } catch(e) {
-            console.warn("Aviso: Falha silenciosa ao capturar IP. Prosseguindo com fluxo alternativo.");
-        }
-
-        try {
-            let pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipUsuario });
-            
-            let respostaGas = await fetch(urlGAS, {
-                redirect: "follow", 
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: pacote
-            });
-
-            if (!respostaGas.ok) throw new Error("Falha na resposta do servidor GAS.");
-
-            let resultadoTexto = await respostaGas.text();
-            let resultado = JSON.parse(resultadoTexto);
-
-            if (resultado.status === "bloqueado") {
-                abrirModalModerno('modalLimiteSemanal');
-                registrarLogBloqueio(ipUsuario);
-            } else {
-                // Fluxo Permitido
-                if (typeof validarExpediente === 'function') {
-                    validarExpediente();
-                } else {
-                    console.warn("Alerta: A função 'validarExpediente' não foi encontrada no script.js");
-                }
-            }
-        } catch (e) {
-            console.warn("Erro de rede silencioso contornado: ", e);
-            // Em caso de erro na planilha, permitimos o fluxo para não perder o cliente
-            if (typeof validarExpediente === 'function') validarExpediente();
-        } finally {
-            // Sempre restaura o botão, independentemente de erro ou sucesso
-            btn.innerText = "🚀 CALCULAR O FRETE";
-            btn.disabled = false;
-        }
-    }
-
-    async function registrarLog(dadosCalculados) {
-        let ipUsuario = "0.0.0.0";
-        try {
-            let resIp = await fetch("https://api.ipify.org?format=json");
-            if (resIp.ok) {
-                let jsonIp = await resIp.json();
-                ipUsuario = jsonIp.ip;
-            }
-        } catch(e) { /* Silencioso */ }
-
-        let pacoteDeDados = {
-            tipo: "log_sucesso", 
-            data: new Date().toLocaleString("pt-BR"),
-            ip: ipUsuario,
-            dispositivo: navigator.userAgent.substring(0, 100), // Proteção contra strings gigantes
-            endereco: dadosCalculados.enderecoCompleto || "Não informado",
-            bairro: dadosCalculados.bairro || "Não informado",
-            km: dadosCalculados.km || "0",
-            valor: dadosCalculados.valor || "0"
-        };
-
-        fetch(urlGAS, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(pacoteDeDados)
-        }).catch(() => console.warn("Log de sucesso não enviado."));
-    }
-
-    async function registrarLogBloqueio(ipBloqueado) {
-        let pacoteDeDados = {
-            tipo: "log_bloqueio", 
-            data: new Date().toLocaleString("pt-BR"),
-            ip: ipBloqueado,
-            dispositivo: navigator.userAgent.substring(0, 100),
-            endereco: "BLOQUEADO",
-            bairro: "-",
-            km: "0",
-            valor: "0"
-        };
-
-        fetch(urlGAS, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(pacoteDeDados)
-        }).catch(() => console.warn("Log de bloqueio não enviado."));
-    }
-</script>
-<script src="script.js?v=14"></script>
+<script src="script.js?v=16"></script>
 </body>
 </html>
