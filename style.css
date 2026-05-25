@@ -329,3 +329,90 @@ input:focus {
     font-size: 0.9rem;
 }
 .sugestao-item:hover { background: rgba(46, 204, 113, 0.2); }
+
+/* =========================================
+   ESTILIZAÇÃO DO MODAL DE LIMITE DE ACESSO
+   ========================================= */
+.danger-glass {
+    background: rgba(30, 20, 25, 0.55) !important; /* Tom sutilmente avermelhado escuro translúcido */
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border: 1px solid rgba(255, 71, 87, 0.3) !important; /* Borda fina brilhante na cor de alerta */
+    box-shadow: 0 15px 40px rgba(255, 71, 87, 0.15), inset 0 0 15px rgba(255, 71, 87, 0.05) !important;
+    border-radius: 28px !important;
+    padding: 35px 25px !important;
+}
+
+.icon-shield {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.5));
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.danger-glass h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #ff4757;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+}
+
+.divider-glow {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff4757, transparent);
+    margin: 15px auto;
+    width: 80%;
+}
+
+.danger-glass .main-text {
+    font-size: 0.95rem;
+    color: #ffffff;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.danger-glass .sub-text {
+    font-size: 0.85rem;
+    color: #cbcbcb;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.glow-btn-wa {
+    border-radius: 30px !important; /* Formato Pílula */
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease !important;
+}
+
+.glow-btn-wa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 20px rgba(37, 211, 102, 0.6) !important;
+}
+
+.btn-txt-back {
+    background: none;
+    border: none;
+    color: #666;
+    margin-top: 20px;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.btn-txt-back:hover {
+    color: #aaa;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.4)); }
+    50% { transform: scale(1.05); filter: drop-shadow(0 0 20px rgba(255, 71, 87, 0.7)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.4)); }
+}
