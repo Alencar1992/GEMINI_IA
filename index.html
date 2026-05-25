@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🏍💨 ALENCAR FRETES</title>
     <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=15" />
+    <link rel="stylesheet" href="style.css?v=17" />
 </head>
 <body>
 
@@ -45,7 +45,7 @@
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
 </div>
 
-<div class="container">
+<div class="container glass-panel">
     <div class="row-endereco-num">
         <div class="input-group">
             <label>📅 DATA DA ENTREGA</label>
@@ -62,8 +62,8 @@
         <input type="text" id="nome_cliente" placeholder="Nome completo" autocomplete="name">
     </div>
     
-    <div class="box-destaque">
-        <label style="text-align: center; display: block; margin-bottom: 15px; font-weight: 600; color: #2ecc71;">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
+    <div class="box-destaque glass-panel-inner">
+        <label class="glow-text">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
         <div class="tipo-busca">
             <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">POR CEP</button>
             <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">NOME DA RUA</button>
@@ -83,7 +83,7 @@
         </div>
         <div class="input-group">
             <label>📍 RUA</label>
-            <input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly style="background: rgba(255,255,255,0.05); color: #888;">
+            <input type="text" id="rua_pelo_cep" placeholder="A rua aparecerá aqui..." readonly class="input-readonly">
         </div>
     </div>
 
@@ -102,35 +102,35 @@
     </div>
 
     <div class="input-group">
-        <label>🚩 PONTO DE REFERÊNCIA (Opcional)</label>
+        <label>🚩 PONTO DE REFERÊNCIA (OPCIONAL)</label>
         <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado...">
     </div>
     
     <div class="botoes-acao">
-        <button class="btn-green shadow-glow" id="btn-calcular" onclick="iniciarVerificacao()">🚀 CALCULAR O FRETE</button>
-        <button class="btn-outline" onclick="limpar()">🧹 Limpar Campos</button>
+        <button class="btn-green glow-button" id="btn-calcular" onclick="iniciarVerificacao()">🚀 CALCULAR O FRETE</button>
+        <button class="btn-outline-dark" onclick="limpar()">🧹 LIMPAR CAMPOS</button>
     </div>
 
     <div id="campo-resumo" style="display: none;">
-        <h3 class="titulo-neon" style="text-align: center; margin: 25px 0;">RESUMO DO PEDIDO</h3>
+        <h3 class="titulo-resumo">RESUMO DO PEDIDO</h3>
         
         <div class="resultado-grid">
-            <div class="card-info">
+            <div class="card-info glass-panel-inner">
                 <label>DISTÂNCIA</label>
                 <span id="distancia">0.00 <small>KM</small></span>
             </div>
-            <div class="card-info destaque">
+            <div class="card-info glass-panel-inner destaque">
                 <label>VALOR TOTAL</label>
                 <span id="valor">R$ 0,00</span>
             </div>
         </div>
         
         <div class="bairro-tempo-display">
-            <div class="info-item">
+            <div class="info-item glass-panel-inner">
                 <span class="info-label">🏘️ Bairro de Destino</span>
                 <span class="info-value" id="res-bairro">---</span>
             </div>
-            <div class="info-item">
+            <div class="info-item glass-panel-inner">
                 <span class="info-label">⏱️ Tempo de Viagem</span>
                 <span class="info-value" id="res-tempo">---</span>
             </div>
@@ -138,13 +138,13 @@
         
         <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
 
-        <div id="mapa-container">
+        <div id="mapa-container" class="glass-panel-inner">
             <div id="map"></div>
         </div>
     </div>
 
-    <div class="box-destaque" id="sec-tipo-local" style="display: none; margin-top: 25px;">
-        <label style="text-align: center; display: block; margin-bottom: 15px; font-weight: 600; color: #2ecc71;">🏠 TIPO DE LOCAL DE ENTREGA</label>
+    <div class="box-destaque glass-panel-inner" id="sec-tipo-local" style="display: none; margin-top: 25px;">
+        <label class="glow-text">🏠 TIPO DE LOCAL DE ENTREGA</label>
         <div class="tipo-residencia">
             <button class="btn-selecao" id="btn-casa" onclick="selecionarTipo('casa')">🏠 CASA</button>
             <button class="btn-selecao" id="btn-apto" onclick="selecionarTipo('apto')">🏢 APTO</button>
@@ -163,12 +163,12 @@
             </div>
         </div>
 
-        <button class="btn-whatsapp shadow-glow" onclick="prepararEnvio()" style="margin-top: 25px; width: 100%;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
+        <button class="btn-whatsapp glow-button" onclick="prepararEnvio()" style="margin-top: 25px;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=16"></script>
+<script src="script.js?v=17"></script>
 </body>
 </html>
