@@ -8,9 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=17" />
+    <link rel="stylesheet" href="style.css?v=18" />
 </head>
 <body>
+
+<div id="modalAviso" class="modal-overlay">
+    <div class="msg-box">
+        <h2 style="color: #f1c40f; margin-bottom: 15px;">⚠️ ATENÇÃO</h2>
+        <p id="textoAviso" style="margin-bottom: 20px;">Mensagem de erro aqui.</p>
+        <button class="btn-outline-dark" onclick="document.getElementById('modalAviso').style.display='none'">OK, ENTENDI</button>
+    </div>
+</div>
 
 <div id="modalLimiteSemanal" class="modal-overlay">
     <div class="msg-box danger">
@@ -22,21 +30,21 @@
     </div>
 </div>
 
-<div id="modalAviso" class="modal-overlay">
+<div id="modalExpediente" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: #f1c40f; margin-bottom: 15px;">⚠️ ATENÇÃO</h2>
-        <p id="textoAviso" style="margin-bottom: 20px;">Mensagem de erro aqui.</p>
-        <button class="btn-outline-dark" onclick="document.getElementById('modalAviso').style.display='none'">OK, ENTENDI</button>
+        <p style="margin-bottom: 20px;">A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
+        <button class="btn-green" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
+        <button class="btn-outline-dark" onclick="fecharModalExpediente()">CANCELAR</button>
     </div>
 </div>
-
 
 <div id="avisoLucas" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: #2ecc71; margin-bottom: 15px;">TUDO CERTO!</h2>
         <p style="margin-bottom: 20px;">Deseja enviar os dados do pedido para o WhatsApp?</p>
         <button class="btn-whatsapp" onclick="finalizarEnvio()">✅ SIM, ENVIAR AGORA</button>
-        <button class="btn-outline" onclick="fecharModal()">VOLTAR</button>
+        <button class="btn-outline-dark" onclick="fecharModal()">VOLTAR</button>
     </div>
 </div>
 
@@ -136,7 +144,7 @@
             </div>
         </div>
         
-        <div id="aviso-taxa">⚠️ TAXA MÍNIMA APLICADA ✅</div>
+        <div id="aviso-taxa">⚠️ TAXA MÍNIMA DE R$ 10,00 APLICADA ✅</div>
 
         <div id="mapa-container" class="glass-panel-inner">
             <div id="map"></div>
@@ -169,6 +177,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=17"></script>
+<script src="script.js?v=18"></script>
 </body>
 </html>
