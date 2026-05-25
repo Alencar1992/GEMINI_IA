@@ -4,8 +4,8 @@
 const LOCATIONIQ_TOKEN = 'pk.1a31ca6507dd252aa191052a40573422';
 const GOOGLE_SCRIPT_URL_PEDIDOS = "https://script.google.com/macros/s/AKfycbwvhHL4BiAecxAgumFmeFqmNhL62C87PSJ0zX1nIZTkB2tIDEz26y6SFbovQnh3B2oEHQ/exec"; 
 const GOOGLE_SCRIPT_URL_LOG = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
-const TAXA_MINIMA = 10.00;
-const VALOR_POR_KM = 2.00;
+const TAXA_MINIMA = 10.00; // Valor Mínimo Absoluto
+const VALOR_POR_KM = 2.00; // Valor cobrado por KM rodado
 const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
 const WHATSAPP_NUMERO = "5511981071822";
 
@@ -17,21 +17,26 @@ let tempoGlobal = "";
 let timeoutBusca = null;
 
 // ==========================================
-// FUNÇÃO UNIVERSAL DE AVISOS (GLASSMORPHISM)
+// FUNÇÃO DE AVISOS SEGUROS
 // ==========================================
 function mostrarAviso(mensagem) {
-    document.getElementById('textoAviso').innerText = mensagem;
-    document.getElementById('modalAviso').style.display = 'flex';
+    const modal = document.getElementById('modalAviso');
+    const texto = document.getElementById('textoAviso');
+    
+    // Se o modal existir no HTML, ele exibe bonito. Se não, usa o alert padrão para não travar o app.
+    if (modal && texto) {
+        texto.innerText = mensagem;
+        modal.style.display = 'flex';
+    } else {
+        alert(mensagem);
+    }
 }
 
 // ==========================================
 // INICIALIZAÇÃO DO MAPA (LEAFLET)
 // ==========================================
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
 const iconeMoto = L.divIcon({ html: '🏍️', className: 'icone-mapa-moto', iconSize: [35, 35], iconAnchor: [17, 17] });
 const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSize: [35, 35], iconAnchor: [17, 17] });
@@ -50,7 +55,7 @@ let control = L.Routing.control({
 }).addTo(map);
 
 // ==========================================
-// CONTROLES DE INTERFACE
+// CONTROLES DE INTERFACE E EVENTOS
 // ==========================================
 function selecionarTipo(tipo) {
     tipoResidencia = tipo;
@@ -75,7 +80,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ==========================================
-// BUSCAS DE ENDEREÇO
+// AUTOCOMPLETE E BUSCA CEP
 // ==========================================
 async function sugerirEndereco(texto) {
     const lista = document.getElementById('lista-sugestoes');
@@ -134,7 +139,7 @@ async function buscarCep() {
 }
 
 // ==========================================
-// FUNÇÕES DE TRAVAMENTO E LIBERAÇÃO DO BOTÃO
+// VALIDAÇÃO E GATILHO INICIAL (Sem Travamento)
 // ==========================================
 function liberarBotao(mensagem = "🚀 CALCULAR O FRETE") {
     const btn = document.getElementById('btn-calcular');
@@ -142,71 +147,6 @@ function liberarBotao(mensagem = "🚀 CALCULAR O FRETE") {
     btn.disabled = false;
 }
 
-// ==========================================
-// VERIFICAÇÃO DE ACESSO (Otimizada e Blindada contra travamentos)
-// ==========================================
-async function iniciarVerificacao() {
-    const btn = document.getElementById('btn-calcular');
-    btn.innerHTML = "⏳ VERIFICANDO...";
-    btn.disabled = true;
-
-    // Se as validações iniciais falharem, para aqui.
-    if (!validacoesIniciais()) {
-        liberarBotao();
-        return;
-    }
-
-    let ipUsuario = "0.0.0.0";
-    
-    // Tenta pegar o IP rápido. Se falhar, não trava.
-    try {
-        const controleIp = new AbortController();
-        const timeoutIp = setTimeout(() => controleIp.abort(), 1500);
-        let resIp = await fetch("https://api.ipify.org?format=json", { signal: controleIp.signal });
-        clearTimeout(timeoutIp);
-        if (resIp.ok) { let jsonIp = await resIp.json(); ipUsuario = jsonIp.ip; }
-    } catch(e) { console.warn("IP não capturado, usando fallback."); }
-
-    // BLINDAGEM: Se a planilha der erro ou demorar mais de 2 segundos, o App ignora e calcula a rota.
-    try {
-        const pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipUsuario });
-        const controleAppsScript = new AbortController();
-        const timeoutScript = setTimeout(() => controleAppsScript.abort(), 2000); // 2 Segundos Máximo
-
-        let respostaGas = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
-            redirect: "follow",
-            method: "POST", 
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: pacote,
-            signal: controleAppsScript.signal
-        });
-        
-        clearTimeout(timeoutScript);
-        
-        let resultadoTexto = await respostaGas.text();
-        
-        try {
-            let resultado = JSON.parse(resultadoTexto);
-            if (resultado.status === "bloqueado") {
-                document.getElementById('modalLimiteSemanal').style.display = 'flex';
-                liberarBotao();
-                return; // Bloqueado, para aqui.
-            }
-        } catch (parseError) {
-             console.warn("Aviso: Planilha retornou HTML ou erro de CORS em vez de JSON. Seguindo fluxo de cálculo.");
-        }
-
-    } catch (e) {
-        console.warn("Aviso: Timeout ou erro na comunicação com o Google. Seguindo fluxo de cálculo.");
-    }
-
-    // Se chegou até aqui, o cliente está liberado para calcular a rota!
-    validarExpediente();
-}
-
-// ==========================================
-// VALIDAÇÃO DOS DADOS DO CLIENTE
-// ==========================================
 function validacoesIniciais() {
     if (!tipoBusca) { mostrarAviso("Selecione 'Por CEP' ou 'Nome da Rua' primeiro."); return false; }
     
@@ -216,13 +156,53 @@ function validacoesIniciais() {
     if(!dataVal || !horaVal) { mostrarAviso("Por favor, preencha a Data e o Horário da entrega!"); return false; }
     
     if (tipoBusca === 'cep' && (!document.getElementById('cep').value || !document.getElementById('num_residencia_cep').value)) {
-        mostrarAviso("Preencha o CEP e o Número da residência!");
-        return false;
+        mostrarAviso("Preencha o CEP e o Número da residência!"); return false;
     } else if (tipoBusca === 'rua' && (!document.getElementById('destino').value || !document.getElementById('num_residencia').value)) {
-        mostrarAviso("Preencha a Rua e o Número da residência!");
-        return false;
+        mostrarAviso("Preencha a Rua e o Número da residência!"); return false;
     }
-    return true; // Passou em todos os testes
+    return true; 
+}
+
+async function iniciarVerificacao() {
+    const btn = document.getElementById('btn-calcular');
+    btn.innerHTML = "⏳ VERIFICANDO...";
+    btn.disabled = true;
+
+    if (!validacoesIniciais()) {
+        liberarBotao();
+        return;
+    }
+
+    try {
+        // Tenta checar o limite no Google Script muito rapidamente (Timeout de 1,5 segundos)
+        // Se a planilha estiver com erro ou demorar, ele aborta e DEIXA o cliente calcular.
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500); 
+        
+        const pacote = JSON.stringify({ tipo: "verificar_limite", ip: "0.0.0.0" });
+        const respostaGas = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
+            method: "POST", 
+            body: pacote,
+            signal: controller.signal 
+        });
+        
+        clearTimeout(timeoutId);
+        const resultadoTexto = await respostaGas.text();
+        
+        if (resultadoTexto.includes('"bloqueado"')) {
+            const modalLimite = document.getElementById('modalLimiteSemanal');
+            if(modalLimite) modalLimite.style.display = 'flex';
+            else mostrarAviso("Limite de consultas atingido. Fale comigo no WhatsApp.");
+            
+            liberarBotao();
+            return; 
+        }
+    } catch (e) {
+        console.warn("Verificação ignorada por demora ou erro. Seguindo para o cálculo.");
+    }
+
+    // Segue para verificar se está dentro do horário comercial para mostrar o aviso de disponibilidade
+    validarExpediente();
 }
 
 function validarExpediente() {
@@ -230,9 +210,11 @@ function validarExpediente() {
     const horaVal = document.getElementById('hora_entrega').value;
     const d = new Date(dataVal + 'T' + horaVal);
     
-    // Validação de horário comercial (Segunda a Sexta, 08h as 17h)
+    // Se for entre Segunda(1) e Sexta(5), das 08:00 as 17:00, avisa sobre a disponibilidade.
     if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() <= 17) {
-        document.getElementById('modalExpediente').style.display = 'flex';
+        const modal = document.getElementById('modalExpediente');
+        if(modal) modal.style.display = 'flex';
+        else buscarRota(); // Se não achar o modal, calcula direto
     } else { 
         buscarRota(); 
     }
@@ -244,7 +226,7 @@ function continuarCalculo() {
 }
 
 // ==========================================
-// MAPA E CÁLCULO DE ROTA 
+// CÁLCULO DE ROTA (O MOTOR)
 // ==========================================
 async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
@@ -275,7 +257,7 @@ async function buscarRota() {
             }, 200);
 
         } else { 
-            mostrarAviso("Endereço não localizado com precisão."); 
+            mostrarAviso("Endereço não localizado com precisão. Verifique a escrita e tente novamente."); 
             liberarBotao();
         }
     } catch (e) { 
@@ -284,7 +266,7 @@ async function buscarRota() {
     } 
 }
 
-// Quando o Leaflet terminar de traçar a rota com sucesso
+// Quando o mapa encontra a rota com sucesso, ele faz as contas financeiras.
 control.on('routesfound', function(e) {
     const routes = e.routes[0];
     const km = routes.summary.totalDistance / 1000;
@@ -292,9 +274,11 @@ control.on('routesfound', function(e) {
     const tempoMin = Math.round(routes.summary.totalTime / 60) + 5;
     tempoGlobal = tempoMin + " MIN";
     
-    // CÁLCULO: R$ 2,00 por KM e R$ 10,00 de mínima
+    // A MATEMÁTICA: Pega a quilometragem e multiplica por 2 reais. 
+    // O comando Math.max obriga o valorFinal a nunca ser menor que os 10 reais da TAXA_MINIMA.
     const calculoBase = km * VALOR_POR_KM;
     const valorFinal = Math.max(TAXA_MINIMA, calculoBase);
+    
     const valorFormatado = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     
     document.getElementById('distancia').innerText = km.toFixed(2);
@@ -307,7 +291,7 @@ control.on('routesfound', function(e) {
         ? `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})`
         : `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
     
-    // Dispara o log para a planilha silenciosamente (sem travar a tela)
+    // Registra silenciosamente na planilha de controle
     registrarLogJS(km.toFixed(2), valorFormatado, enderecoBuscado, bairroGlobal.toUpperCase());
 
     setTimeout(() => { document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
@@ -323,7 +307,7 @@ control.on('routingerror', function(e) {
 });
 
 // ==========================================
-// FUNÇÕES AUXILIARES E FINALIZAÇÃO
+// FUNÇÕES DE ENVIO E FORMATAÇÃO DE DADOS
 // ==========================================
 function limpar() { location.reload(); }
 function fecharModalExpediente() { document.getElementById('modalExpediente').style.display = 'none'; liberarBotao(); }
@@ -332,7 +316,9 @@ function fecharModal() { document.getElementById('avisoLucas').style.display = '
 function prepararEnvio() {
     if (!tipoResidencia) return mostrarAviso("Selecione se a entrega é em CASA ou APTO.");
     if (!document.getElementById('nome_cliente').value) return mostrarAviso("Preencha o Nome do Cliente!");
-    document.getElementById('avisoLucas').style.display = 'flex';
+    
+    const modal = document.getElementById('avisoLucas');
+    if(modal) modal.style.display = 'flex';
 }
 
 function obterDataFormatada(dataInput) {
@@ -391,18 +377,9 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ==========================================
-// ESPIÃO DE DADOS (PLANILHA)
+// REGISTRO DE DADOS ASSÍNCRONO NO GOOGLE SHEETS
 // ==========================================
 async function registrarLogJS(km, valor, endereco, bairro) {
-    let ipUsuario = "0.0.0.0";
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        let resIp = await fetch("https://api.ipify.org?format=json", { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (resIp.ok) { let jsonIp = await resIp.json(); ipUsuario = jsonIp.ip; }
-    } catch(e) {}
-
     let textoDispositivo = navigator.userAgent;
     let dispFormatado = "📱 Outro/Desconhecido";
     if (/android/i.test(textoDispositivo)) dispFormatado = "📱 Celular Android";
@@ -410,6 +387,20 @@ async function registrarLogJS(km, valor, endereco, bairro) {
     else if (/windows/i.test(textoDispositivo)) dispFormatado = "💻 Computador Windows";
     else if (/mac/i.test(textoDispositivo)) dispFormatado = "💻 Computador Mac";
 
-    let pacoteDeDados = { data: new Date().toLocaleString("pt-BR"), ip: ipUsuario, dispositivo: dispFormatado, endereco: endereco, bairro: bairro, km: km, valor: valor };
-    fetch(GOOGLE_SCRIPT_URL_LOG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pacoteDeDados) });
+    let pacoteDeDados = { 
+        data: new Date().toLocaleString("pt-BR"), 
+        ip: "0.0.0.0", 
+        dispositivo: dispFormatado, 
+        endereco: endereco, 
+        bairro: bairro, 
+        km: km, 
+        valor: valor 
+    };
+    
+    fetch(GOOGLE_SCRIPT_URL_LOG, { 
+        method: "POST", 
+        mode: "no-cors", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(pacoteDeDados) 
+    });
 }
