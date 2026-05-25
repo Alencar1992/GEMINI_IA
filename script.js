@@ -30,7 +30,7 @@ const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSi
 
 let control = L.Routing.control({
     waypoints: [], 
-    lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.9 }] }, 
+    lineOptions: { styles: [{ color: '#2ecc71', weight: 6, opacity: 0.9 }] }, 
     createMarker: function(i, wp, n) {
         if (i === 0) return L.marker(wp.latLng, { icon: iconeMoto }).bindPopup("<b>Origem:</b><br>Alencar Fretes");
         if (i === n - 1) return L.marker(wp.latLng, { icon: iconeCasa }).bindPopup("<b>Destino:</b><br>Cliente");
@@ -42,7 +42,7 @@ let control = L.Routing.control({
 }).addTo(map);
 
 // ==========================================
-// CONTROLES DE INTERFACE
+// CONTROLES DE INTERFACE E EVENTOS
 // ==========================================
 function selecionarTipo(tipo) {
     tipoResidencia = tipo;
@@ -59,7 +59,6 @@ function selecionarBusca(tipo) {
     document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
 }
 
-// Fechar sugestões ao clicar fora
 document.addEventListener('click', function(e) {
     if (e.target.id !== 'destino') {
         const lista = document.getElementById('lista-sugestoes');
@@ -68,7 +67,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ==========================================
-// BUSCAS DE ENDEREÇO (Com AbortController Sênior)
+// BUSCAS DE ENDEREÇO
 // ==========================================
 async function sugerirEndereco(texto) {
     const lista = document.getElementById('lista-sugestoes');
@@ -76,17 +75,12 @@ async function sugerirEndereco(texto) {
     
     clearTimeout(timeoutBusca);
     timeoutBusca = setTimeout(async () => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seg limite
-
         try {
             const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
-            const resp = await fetch(url, { signal: controller.signal });
+            const resp = await fetch(url);
             const data = await resp.json();
             
-            clearTimeout(timeoutId);
             lista.innerHTML = '';
-            
             if (data && data.length > 0) {
                 data.forEach(item => {
                     const div = document.createElement('div');
@@ -103,26 +97,19 @@ async function sugerirEndereco(texto) {
             } else {
                 lista.style.display = 'none';
             }
-        } catch (e) { 
-            console.warn("Autocompletar abortado ou falhou:", e); 
-        }
+        } catch (e) { console.warn("Autocompletar falhou", e); }
     }, 600);
 }
 
 async function buscarCep() {
-    const cepInput = document.getElementById('cep');
-    const cep = cepInput.value.replace(/\D/g, '');
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
     if (cep.length !== 8) return;
     
     const inputRua = document.getElementById('rua_pelo_cep');
     inputRua.value = "Buscando...";
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
     try {
-        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`, { signal: controller.signal });
-        clearTimeout(timeoutId);
+        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await resp.json();
         
         if (!data.erro) {
@@ -130,11 +117,48 @@ async function buscarCep() {
             bairroGlobal = data.bairro; 
         } else { 
             inputRua.value = "";
-            alert("CEP não encontrado. Verifique e tente novamente."); 
+            alert("CEP não encontrado."); 
         }
     } catch (e) { 
         inputRua.value = "";
-        console.warn("Falha no ViaCEP:", e); 
+        console.warn("Erro no ViaCEP"); 
+    }
+}
+
+// ==========================================
+// VERIFICAÇÃO DE ACESSO E LOG (Apps Script)
+// ==========================================
+async function iniciarVerificacao() {
+    const btn = document.getElementById('btn-calcular');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = "⏳ VERIFICANDO...";
+    btn.disabled = true;
+
+    let ipUsuario = "0.0.0.0";
+    try {
+        const controle = new AbortController();
+        const idTempo = setTimeout(() => controle.abort(), 3000);
+        let resIp = await fetch("https://api.ipify.org?format=json", { signal: controle.signal });
+        clearTimeout(idTempo);
+        if (resIp.ok) { let jsonIp = await resIp.json(); ipUsuario = jsonIp.ip; }
+    } catch(e) { }
+
+    try {
+        let pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipUsuario });
+        let respostaGas = await fetch(GOOGLE_SCRIPT_URL_LOG, { method: "POST", body: pacote });
+        let resultadoTexto = await respostaGas.text();
+        let resultado = JSON.parse(resultadoTexto);
+
+        if (resultado.status === "bloqueado") {
+            document.getElementById('modalLimiteSemanal').style.display = 'flex';
+        } else {
+            validarExpediente();
+        }
+    } catch (e) {
+        validarExpediente(); // Permite seguir em caso de erro na planilha
+    } finally {
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
     }
 }
 
@@ -156,7 +180,6 @@ function validarExpediente() {
     }
 
     const d = new Date(dataVal + 'T' + horaVal);
-    // Ajustado: segunda a sexta, das 08:00 às 17:59
     if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() <= 17) {
         document.getElementById('modalExpediente').style.display = 'flex';
     } else { 
@@ -171,10 +194,8 @@ function continuarCalculo() {
 
 async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
-    const textoOriginal = btn.innerHTML;
-    btn.innerHTML = "⏳ CALCULANDO ROTA...";
+    btn.innerHTML = "⏳ CALCULANDO...";
     btn.disabled = true;
-    btn.style.opacity = "0.7";
 
     let queryBusca = tipoBusca === 'cep' 
         ? `${document.getElementById('rua_pelo_cep').value} ${document.getElementById('num_residencia_cep').value} São Paulo`
@@ -186,7 +207,6 @@ async function buscarRota() {
         
         if(data && data.length > 0) {
             const info = data[0];
-            
             if (tipoBusca === 'rua' && info.address) {
                 bairroGlobal = info.address.suburb || info.address.neighbourhood || info.address.city_district || "SÃO PAULO";
             }
@@ -198,18 +218,12 @@ async function buscarRota() {
             map.invalidateSize();
             control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
         } else { 
-            alert("Endereço não localizado com precisão. Tente colocar o nome da rua mais completo."); 
+            alert("Endereço não localizado com precisão."); 
         }
-    } catch (e) { 
-        alert("Erro de conexão ao buscar rota no mapa."); 
-    } finally {
-        btn.innerHTML = textoOriginal; 
-        btn.disabled = false;
-        btn.style.opacity = "1";
-    }
+    } catch (e) { alert("Erro de conexão ao buscar rota no mapa."); } 
+    finally { btn.innerHTML = "🔄 RECALCULAR FRETE"; btn.disabled = false; }
 }
 
-// Quando a rota é encontrada pelo Leaflet
 control.on('routesfound', function(e) {
     const routes = e.routes[0];
     const km = routes.summary.totalDistance / 1000;
@@ -233,17 +247,9 @@ control.on('routesfound', function(e) {
     
     registrarLogJS(km.toFixed(2), valorFormatado, enderecoBuscado, bairroGlobal.toUpperCase());
 
-    setTimeout(() => {
-        document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setTimeout(() => { document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+    setTimeout(() => { map.fitBounds(L.latLngBounds(routes.coordinates), {padding: [40, 40]}); }, 200);
 
-    setTimeout(() => {
-        const bounds = L.latLngBounds(routes.coordinates);
-        map.fitBounds(bounds, {padding: [40, 40]});
-    }, 200);
-
-    const btn = document.getElementById('btn-calcular');
-    btn.innerHTML = "🔄 RECALCULAR FRETE";
     rotaCalculada = true;
 });
 
@@ -255,8 +261,8 @@ function fecharModalExpediente() { document.getElementById('modalExpediente').st
 function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
 
 function prepararEnvio() {
-    if (!tipoResidencia) return alert("Por favor, selecione se a entrega é em CASA ou APTO.");
-    if (!document.getElementById('nome_cliente').value) return alert("Por favor, preencha o Nome do Cliente!");
+    if (!tipoResidencia) return alert("Selecione se a entrega é em CASA ou APTO.");
+    if (!document.getElementById('nome_cliente').value) return alert("Preencha o Nome do Cliente!");
     document.getElementById('avisoLucas').style.display = 'flex';
 }
 
@@ -264,11 +270,9 @@ function obterDataFormatada(dataInput) {
     if(!dataInput) return "---";
     const partes = dataInput.split('-');
     const d = new Date(partes[0], parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
-    
-    const diasSemana = ["DOMINGO", "SEGUNDA-FEIRA", "TERÇA-FEIRA", "QUARTA-FEIRA", "QUINTA-FEIRA", "SEXTA-FEIRA", "SÁBADO"];
-    const meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
-    
-    return `${diasSemana[d.getDay()]}, ${d.getDate()} DE ${meses[d.getMonth()]} DE ${d.getFullYear()}`;
+    const diasSemana = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+    const meses = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+    return `${diasSemana[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function finalizarEnvio() {
@@ -296,10 +300,7 @@ function finalizarEnvio() {
     let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
     msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A⏱️ *TEMPO ESTIMADO:* ${tempoGlobal}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
     
-    if(tipoResidencia === 'apto') {
-        msg += `🏢 *LOCAL:* Bloco ${dados.bloco} - Apto ${dados.apto}%0A`;
-    }
-    
+    if(tipoResidencia === 'apto') msg += `🏢 *LOCAL:* Bloco ${dados.bloco} - Apto ${dados.apto}%0A`;
     msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
 
     fetch(GOOGLE_SCRIPT_URL_PEDIDOS, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
@@ -307,7 +308,7 @@ function finalizarEnvio() {
     fecharModal();
 }
 
-// Bloqueio de datas customizadas
+// Bloqueio de datas customizadas (Março)
 document.addEventListener("DOMContentLoaded", function() {
     const inputData = document.getElementById('data_entrega');
     if (inputData) {
@@ -320,21 +321,16 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// ==========================================
-// ESPIÃO DE DADOS (Renomeado para evitar conflito com o HTML)
-// ==========================================
+// ESPIÃO DE DADOS
 async function registrarLogJS(km, valor, endereco, bairro) {
-    let ipUsuario = "Desconhecido";
+    let ipUsuario = "0.0.0.0";
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
         let resIp = await fetch("https://api.ipify.org?format=json", { signal: controller.signal });
         clearTimeout(timeoutId);
-        if (resIp.ok) {
-            let jsonIp = await resIp.json();
-            ipUsuario = jsonIp.ip;
-        }
-    } catch(e) { /* Falha silenciosa */ }
+        if (resIp.ok) { let jsonIp = await resIp.json(); ipUsuario = jsonIp.ip; }
+    } catch(e) {}
 
     let textoDispositivo = navigator.userAgent;
     let dispFormatado = "📱 Outro/Desconhecido";
@@ -343,20 +339,6 @@ async function registrarLogJS(km, valor, endereco, bairro) {
     else if (/windows/i.test(textoDispositivo)) dispFormatado = "💻 Computador Windows";
     else if (/mac/i.test(textoDispositivo)) dispFormatado = "💻 Computador Mac";
 
-    let pacoteDeDados = {
-        data: new Date().toLocaleString("pt-BR"),
-        ip: ipUsuario,
-        dispositivo: dispFormatado, 
-        endereco: endereco,
-        bairro: bairro,
-        km: km,
-        valor: valor
-    };
-
-    fetch(GOOGLE_SCRIPT_URL_LOG, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pacoteDeDados)
-    }).catch(e => console.warn("Erro silencioso no log"));
+    let pacoteDeDados = { data: new Date().toLocaleString("pt-BR"), ip: ipUsuario, dispositivo: dispFormatado, endereco: endereco, bairro: bairro, km: km, valor: valor };
+    fetch(GOOGLE_SCRIPT_URL_LOG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pacoteDeDados) });
 }
