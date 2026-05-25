@@ -4,19 +4,32 @@
     --whatsapp: #25d366; --whatsapp-dark: #128c7e; --btn-inativo: #1a1a1e;
 }
 
-body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
-
-.header-top { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: var(--card); border-bottom: 3px solid var(--verde-frete); box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2); }
-.logo-container img { height: 70px; width: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--verde-frete); margin-bottom: 10px; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
-.header-title h1 { margin: 0; font-size: 1.6em; color: #ffffff; letter-spacing: 2px; font-weight: 900; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
-
-    /* O linear-gradient cria uma película escura sobre a foto para não atrapalhar a leitura */
-    /* Substitua 'sua-foto.jpg' pelo nome exato da imagem que você vai subir no GitHub */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('planofundo.png');
+/* Correção do fundo (lembre de subir a imagem fundo.jpg no seu repositório) */
+body {
+    background: linear-gradient(rgba(15, 20, 30, 0.85), rgba(15, 20, 30, 0.95)), url('logo-cowboy-motofrete.png') no-repeat center center fixed;
     background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    color: #ffffff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* O Título Gigante Responsivo */
+.header-title h1 {
+    font-size: clamp(2.5rem, 8vw, 5rem); /* Cresce e diminui conforme a tela */
+    font-weight: 900;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #00d4ff 0%, #25D366 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 3px 5px 15px rgba(0, 0, 0, 0.8);
+    margin: 15px 0;
+    text-align: center;
+    letter-spacing: 3px;
+}
+
+/* Ajuste da logo para acompanhar o título */
+.logo-container img {
+    width: 120px; /* Deixando a logo um pouco mais imponente */
+    filter: drop-shadow(0px 0px 10px rgba(0, 212, 255, 0.5));
 }
 
 
