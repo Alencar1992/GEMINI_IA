@@ -1,5 +1,5 @@
 /* =========================================
-   BASE E FUNDO (Com link direto da web)
+   BASE E FUNDO (LIQUID GLASS)
    ========================================= */
 * {
     box-sizing: border-box;
@@ -8,9 +8,9 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    /* Imagem noturna direto da web para evitar erros. Para usar a sua gerada, troque a URL por 'url(fundo.jpg)' */
-    background: linear-gradient(rgba(10, 15, 25, 0.85), rgba(10, 15, 25, 0.95)), url('https://images.unsplash.com/photo-1568772585407-9361f9bf3c87?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+    font-family: 'Montserrat', sans-serif;
+    /* Fundo escuro rodovia (Substitua por 'url(fundo.jpg)' se preferir a sua foto) */
+    background: linear-gradient(rgba(15, 20, 25, 0.7), rgba(15, 20, 25, 0.9)), url('https://images.unsplash.com/photo-1517596162391-7f9754f7621c?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
     background-size: cover;
     color: #ffffff;
     min-height: 100vh;
@@ -18,62 +18,70 @@ body {
 }
 
 /* =========================================
-   CABEÇALHO (O Título Gigante)
+   CABEÇALHO
    ========================================= */
 .header-top {
     text-align: center;
-    padding: 30px 15px 10px;
+    padding: 40px 15px 15px;
 }
 
 .logo-container img {
-    width: 90px;
-    filter: drop-shadow(0px 0px 15px rgba(46, 204, 113, 0.6));
+    width: 80px;
     border-radius: 50%;
-    margin-bottom: 10px;
+    border: 2px solid #2ecc71;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+    margin-bottom: 15px;
 }
 
 .header-title h1 {
-    font-size: clamp(2rem, 8vw, 4rem); /* Responsivo: Gigante no PC, ajustado no Celular */
+    font-size: clamp(1.8rem, 6vw, 3rem);
     font-weight: 800;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #ffffff 0%, #2ecc71 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #e0e0e0;
     letter-spacing: 2px;
-    margin: 0;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
 }
 
 /* =========================================
-   CONTAINER PRINCIPAL (Efeito Vidro)
+   PAINÉIS DE VIDRO (GLASSMORPHISM)
    ========================================= */
-.container {
-    background: rgba(20, 25, 35, 0.65);
-    backdrop-filter: blur(12px); /* Efeito de vidro */
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+.glass-panel {
+    background: rgba(30, 35, 40, 0.4); /* Fundo muito transparente */
+    backdrop-filter: blur(20px); /* Muito desfoque */
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Borda clarinha quase invisível */
+    border-radius: 24px;
     padding: 25px;
-    max-width: 600px;
-    margin: 0 auto 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-width: 550px;
+    margin: 0 auto;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+}
+
+.glass-panel-inner {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
 /* =========================================
-   FORMULÁRIOS E INPUTS MODERNOS
+   FORMULÁRIOS E INPUTS (Formato Cápsula)
    ========================================= */
 .input-group {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     width: 100%;
 }
 
 .input-group label {
     display: block;
-    font-size: 0.85rem;
-    color: #aab2bd;
-    margin-bottom: 6px;
+    font-size: 0.75rem;
+    color: #b0b0b0;
+    margin-bottom: 8px;
+    margin-left: 10px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 input[type="text"],
@@ -81,21 +89,26 @@ input[type="date"],
 input[type="time"],
 input[type="number"] {
     width: 100%;
-    padding: 14px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.4); /* Fundo escuro do input */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* Borda clara sutil */
+    border-radius: 30px; /* Arredondamento extremo */
     color: #fff;
-    font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
     transition: all 0.3s ease;
+    outline: none;
 }
 
 input:focus {
-    outline: none;
     border-color: #2ecc71;
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
     background: rgba(0, 0, 0, 0.6);
+}
+
+.input-readonly {
+    background: rgba(0, 0, 0, 0.2) !important;
+    color: #777 !important;
 }
 
 .row-endereco-num {
@@ -106,12 +119,13 @@ input:focus {
 /* =========================================
    BOTÕES E SELEÇÕES
    ========================================= */
-.box-destaque {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 20px;
+.glow-text {
+    text-align: center;
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #2ecc71;
+    font-size: 0.85rem;
 }
 
 .tipo-busca, .tipo-residencia {
@@ -121,132 +135,116 @@ input:focus {
 
 .btn-selecao {
     flex: 1;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border-radius: 8px;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    border-radius: 30px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 0.85rem;
     transition: all 0.3s ease;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .btn-selecao.active {
-    background: rgba(46, 204, 113, 0.2);
+    background: rgba(46, 204, 113, 0.1);
     border-color: #2ecc71;
     color: #2ecc71;
-}
-
-.btn-green {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, #2ecc71, #27ae60);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: transform 0.2s;
-    font-family: 'Poppins', sans-serif;
-}
-
-.btn-whatsapp {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, #25D366, #128C7E);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: 800;
-    cursor: pointer;
-    text-decoration: none;
-    display: block;
-    text-align: center;
-    transition: transform 0.2s;
-    font-family: 'Poppins', sans-serif;
-}
-
-.btn-outline {
-    width: 100%;
-    padding: 14px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 10px;
-    color: #ccc;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: all 0.3s;
-    font-family: 'Poppins', sans-serif;
-}
-
-.btn-outline:hover {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-}
-
-.shadow-glow {
-    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-}
-.shadow-glow:active { transform: scale(0.98); }
-
-.btn-txt {
-    background: none;
-    border: none;
-    color: #888;
-    margin-top: 15px;
-    cursor: pointer;
-    text-decoration: underline;
-    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
 }
 
 .botoes-acao {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 15px;
+    margin-top: 25px;
 }
+
+.glow-button {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid rgba(46, 204, 113, 0.6);
+    border-radius: 30px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-green {
+    background: linear-gradient(90deg, #185a2d, #2ecc71);
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+}
+.btn-green:active { transform: scale(0.98); }
+
+.btn-whatsapp {
+    background: linear-gradient(90deg, #0d5c41, #25D366);
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+}
+
+.btn-outline-dark {
+    width: 100%;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    color: #aaa;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Montserrat', sans-serif;
+}
+.btn-outline-dark:hover { color: #fff; background: rgba(0,0,0,0.8); }
 
 /* =========================================
    CARDS DE RESUMO E MAPA
    ========================================= */
+.titulo-resumo {
+    text-align: center;
+    margin: 30px 0 20px;
+    font-size: 1.2rem;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
 .resultado-grid {
     display: flex;
     gap: 15px;
-    margin-bottom: 15px;
 }
 
 .card-info {
     flex: 1;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 12px;
     text-align: center;
+    padding: 20px 15px;
 }
 
 .card-info.destaque {
     border-color: #2ecc71;
-    background: rgba(46, 204, 113, 0.1);
+    background: rgba(46, 204, 113, 0.05);
 }
 
 .card-info label {
     display: block;
     font-size: 0.75rem;
-    color: #aab2bd;
-    margin-bottom: 5px;
+    color: #aaa;
+    margin-bottom: 8px;
 }
 
 .card-info span {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: #fff;
 }
 .card-info.destaque span {
     color: #2ecc71;
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
 }
 
 .bairro-tempo-display {
@@ -258,9 +256,8 @@ input:focus {
 .info-item {
     display: flex;
     justify-content: space-between;
-    background: rgba(0,0,0,0.3);
-    padding: 12px 15px;
-    border-radius: 8px;
+    margin-bottom: 0;
+    padding: 15px 20px;
     font-size: 0.9rem;
 }
 
@@ -278,54 +275,47 @@ input:focus {
 }
 
 #mapa-container {
-    margin-top: 20px;
-    border-radius: 12px;
     overflow: hidden;
-    border: 2px solid rgba(46, 204, 113, 0.3);
+    padding: 0;
+    border: 2px solid rgba(46, 204, 113, 0.2);
+    border-radius: 18px;
 }
 
-#map { height: 250px; }
+#map { height: 220px; border-radius: 16px; }
 
 /* =========================================
-   MODAIS (Glassmorphism)
+   MODAIS E AUTOCOMPLETE
    ========================================= */
 .modal-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     z-index: 9999;
     align-items: center;
     justify-content: center;
 }
 
 .msg-box {
-    background: rgba(25, 30, 40, 0.9);
+    background: rgba(25, 30, 35, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
     padding: 30px;
-    border-radius: 16px;
+    border-radius: 24px;
     width: 90%;
     max-width: 400px;
     text-align: center;
 }
 
-.msg-box.danger {
-    border-color: #ff4757;
-    box-shadow: 0 0 30px rgba(255, 71, 87, 0.2);
-}
-
-/* =========================================
-   AUTOCOMPLETE (Lista Suspensa)
-   ========================================= */
 .autocomplete-lista {
     position: absolute;
     top: 100%; left: 0; right: 0;
-    background: rgba(30, 35, 45, 0.95);
+    background: rgba(25, 30, 35, 0.95);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
+    border-radius: 18px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 1000;
@@ -333,7 +323,7 @@ input:focus {
     margin-top: 5px;
 }
 .sugestao-item {
-    padding: 12px 15px;
+    padding: 15px 20px;
     cursor: pointer;
     border-bottom: 1px solid rgba(255,255,255,0.05);
     font-size: 0.9rem;
