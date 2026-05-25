@@ -1,5 +1,9 @@
+// ==========================================
+// CONFIGURAÇÕES GLOBAIS
+// ==========================================
 const LOCATIONIQ_TOKEN = 'pk.1a31ca6507dd252aa191052a40573422';
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvhHL4BiAecxAgumFmeFqmNhL62C87PSJ0zX1nIZTkB2tIDEz26y6SFbovQnh3B2oEHQ/exec"; 
+const GOOGLE_SCRIPT_URL_PEDIDOS = "https://script.google.com/macros/s/AKfycbwvhHL4BiAecxAgumFmeFqmNhL62C87PSJ0zX1nIZTkB2tIDEz26y6SFbovQnh3B2oEHQ/exec"; 
+const GOOGLE_SCRIPT_URL_LOG = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
 const TAXA_MINIMA = 5.00;
 const VALOR_POR_KM = 2.00;
 const ORIGEM_FIXA = L.latLng(-23.64464679519379, -46.72038817129933);
@@ -12,6 +16,9 @@ let bairroGlobal = "";
 let tempoGlobal = "";
 let timeoutBusca = null;
 
+// ==========================================
+// INICIALIZAÇÃO DO MAPA (LEAFLET)
+// ==========================================
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -25,11 +32,8 @@ let control = L.Routing.control({
     waypoints: [], 
     lineOptions: { styles: [{ color: '#00d4ff', weight: 6, opacity: 0.9 }] }, 
     createMarker: function(i, wp, n) {
-        if (i === 0) {
-            return L.marker(wp.latLng, { icon: iconeMoto }).bindPopup("<b>Origem:</b><br>Alencar Fretes");
-        } else if (i === n - 1) {
-            return L.marker(wp.latLng, { icon: iconeCasa }).bindPopup("<b>Destino:</b><br>Cliente");
-        }
+        if (i === 0) return L.marker(wp.latLng, { icon: iconeMoto }).bindPopup("<b>Origem:</b><br>Alencar Fretes");
+        if (i === n - 1) return L.marker(wp.latLng, { icon: iconeCasa }).bindPopup("<b>Destino:</b><br>Cliente");
         return null;
     },
     addWaypoints: false,
@@ -37,6 +41,9 @@ let control = L.Routing.control({
     show: false
 }).addTo(map);
 
+// ==========================================
+// CONTROLES DE INTERFACE
+// ==========================================
 function selecionarTipo(tipo) {
     tipoResidencia = tipo;
     document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-selecao active' : 'btn-selecao';
@@ -52,18 +59,34 @@ function selecionarBusca(tipo) {
     document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
 }
 
+// Fechar sugestões ao clicar fora
+document.addEventListener('click', function(e) {
+    if (e.target.id !== 'destino') {
+        const lista = document.getElementById('lista-sugestoes');
+        if(lista) lista.style.display = 'none';
+    }
+});
+
+// ==========================================
+// BUSCAS DE ENDEREÇO (Com AbortController Sênior)
+// ==========================================
 async function sugerirEndereco(texto) {
     const lista = document.getElementById('lista-sugestoes');
     if (texto.length < 4) { lista.style.display = 'none'; return; }
     
     clearTimeout(timeoutBusca);
     timeoutBusca = setTimeout(async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seg limite
+
         try {
             const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
-            const resp = await fetch(url);
+            const resp = await fetch(url, { signal: controller.signal });
             const data = await resp.json();
             
+            clearTimeout(timeoutId);
             lista.innerHTML = '';
+            
             if (data && data.length > 0) {
                 data.forEach(item => {
                     const div = document.createElement('div');
@@ -80,30 +103,44 @@ async function sugerirEndereco(texto) {
             } else {
                 lista.style.display = 'none';
             }
-        } catch (e) { console.error("Erro autocomplete"); }
-    }, 500);
+        } catch (e) { 
+            console.warn("Autocompletar abortado ou falhou:", e); 
+        }
+    }, 600);
 }
-
-document.addEventListener('click', function(e) {
-    if (e.target.id !== 'destino') {
-        const lista = document.getElementById('lista-sugestoes');
-        if(lista) lista.style.display = 'none';
-    }
-});
 
 async function buscarCep() {
-    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    const cepInput = document.getElementById('cep');
+    const cep = cepInput.value.replace(/\D/g, '');
     if (cep.length !== 8) return;
+    
+    const inputRua = document.getElementById('rua_pelo_cep');
+    inputRua.value = "Buscando...";
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
-        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         const data = await resp.json();
+        
         if (!data.erro) {
-            document.getElementById('rua_pelo_cep').value = data.logradouro;
+            inputRua.value = data.logradouro;
             bairroGlobal = data.bairro; 
-        } else { alert("CEP não encontrado."); }
-    } catch (e) { console.error("Erro CEP"); }
+        } else { 
+            inputRua.value = "";
+            alert("CEP não encontrado. Verifique e tente novamente."); 
+        }
+    } catch (e) { 
+        inputRua.value = "";
+        console.warn("Falha no ViaCEP:", e); 
+    }
 }
 
+// ==========================================
+// VALIDAÇÃO E CÁLCULO DE ROTA
+// ==========================================
 function validarExpediente() {
     if (!tipoBusca) return alert("Selecione 'Por CEP' ou 'Nome da Rua' primeiro.");
     
@@ -112,12 +149,6 @@ function validarExpediente() {
     
     if(!dataVal || !horaVal) return alert("Por favor, preencha a Data e o Horário da entrega!");
     
-    // --- INÍCIO DA TRAVA DE DATA ---
-    if (dataVal === '2026-03-07') {
-        return alert("Data indisponível, Compromissos pessoais!");
-    }
-    // --- FIM DA TRAVA DE DATA ---
-
     if (tipoBusca === 'cep' && (!document.getElementById('cep').value || !document.getElementById('num_residencia_cep').value)) {
         return alert("Preencha o CEP e o Número da residência!");
     } else if (tipoBusca === 'rua' && (!document.getElementById('destino').value || !document.getElementById('num_residencia').value)) {
@@ -125,7 +156,8 @@ function validarExpediente() {
     }
 
     const d = new Date(dataVal + 'T' + horaVal);
-    if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() < 17) {
+    // Ajustado: segunda a sexta, das 08:00 às 17:59
+    if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() <= 17) {
         document.getElementById('modalExpediente').style.display = 'flex';
     } else { 
         buscarRota(); 
@@ -141,14 +173,12 @@ async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
     const textoOriginal = btn.innerHTML;
     btn.innerHTML = "⏳ CALCULANDO ROTA...";
+    btn.disabled = true;
     btn.style.opacity = "0.7";
 
-    let queryBusca = "";
-    if (tipoBusca === 'cep') {
-        queryBusca = `${document.getElementById('rua_pelo_cep').value} ${document.getElementById('num_residencia_cep').value} São Paulo`;
-    } else {
-        queryBusca = `${document.getElementById('destino').value} ${document.getElementById('num_residencia').value} São Paulo`;
-    }
+    let queryBusca = tipoBusca === 'cep' 
+        ? `${document.getElementById('rua_pelo_cep').value} ${document.getElementById('num_residencia_cep').value} São Paulo`
+        : `${document.getElementById('destino').value} ${document.getElementById('num_residencia').value} São Paulo`;
     
     try {
         const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBusca)}&format=json&addressdetails=1`);
@@ -162,23 +192,24 @@ async function buscarRota() {
             }
             
             document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
-            
             document.getElementById('campo-resumo').style.display = 'block';
             document.getElementById('sec-tipo-local').style.display = 'block';
             
             map.invalidateSize();
             control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
-
         } else { 
-            alert("Endereço não localizado. Tente digitar o nome da rua mais completo."); 
-            btn.innerHTML = textoOriginal; btn.style.opacity = "1";
+            alert("Endereço não localizado com precisão. Tente colocar o nome da rua mais completo."); 
         }
     } catch (e) { 
-        alert("Erro de conexão ao buscar rota."); 
-        btn.innerHTML = textoOriginal; btn.style.opacity = "1";
-    } 
+        alert("Erro de conexão ao buscar rota no mapa."); 
+    } finally {
+        btn.innerHTML = textoOriginal; 
+        btn.disabled = false;
+        btn.style.opacity = "1";
+    }
 }
 
+// Quando a rota é encontrada pelo Leaflet
 control.on('routesfound', function(e) {
     const routes = e.routes[0];
     const km = routes.summary.totalDistance / 1000;
@@ -196,20 +227,11 @@ control.on('routesfound', function(e) {
     
     document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
     
-    // ==========================================
-    // ---> INÍCIO DO ESPIÃO DE DADOS <---
-    // ==========================================
-    let enderecoBuscado = "";
-    if (tipoBusca === 'cep') {
-        enderecoBuscado = `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})`;
-    } else {
-        enderecoBuscado = `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
-    }
+    let enderecoBuscado = tipoBusca === 'cep' 
+        ? `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})`
+        : `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
     
-    registrarLog(km.toFixed(2), valorFormatado, enderecoBuscado, bairroGlobal.toUpperCase());
-    // ==========================================
-    // ---> FIM DO ESPIÃO DE DADOS <---
-    // ==========================================
+    registrarLogJS(km.toFixed(2), valorFormatado, enderecoBuscado, bairroGlobal.toUpperCase());
 
     setTimeout(() => {
         document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -222,11 +244,12 @@ control.on('routesfound', function(e) {
 
     const btn = document.getElementById('btn-calcular');
     btn.innerHTML = "🔄 RECALCULAR FRETE";
-    btn.style.opacity = "1";
-
     rotaCalculada = true;
 });
 
+// ==========================================
+// FUNÇÕES AUXILIARES E FINALIZAÇÃO
+// ==========================================
 function limpar() { location.reload(); }
 function fecharModalExpediente() { document.getElementById('modalExpediente').style.display = 'none'; }
 function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
@@ -240,16 +263,12 @@ function prepararEnvio() {
 function obterDataFormatada(dataInput) {
     if(!dataInput) return "---";
     const partes = dataInput.split('-');
-    const ano = partes[0];
-    const mes = parseInt(partes[1], 10) - 1;
-    const dia = parseInt(partes[2], 10);
-    
-    const d = new Date(ano, mes, dia);
+    const d = new Date(partes[0], parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
     
     const diasSemana = ["DOMINGO", "SEGUNDA-FEIRA", "TERÇA-FEIRA", "QUARTA-FEIRA", "QUINTA-FEIRA", "SEXTA-FEIRA", "SÁBADO"];
     const meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
     
-    return `${diasSemana[d.getDay()]}, ${dia} DE ${meses[d.getMonth()]} DE ${ano}`;
+    return `${diasSemana[d.getDay()]}, ${d.getDate()} DE ${meses[d.getMonth()]} DE ${d.getFullYear()}`;
 }
 
 function finalizarEnvio() {
@@ -283,70 +302,61 @@ function finalizarEnvio() {
     
     msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
 
-    fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
+    fetch(GOOGLE_SCRIPT_URL_PEDIDOS, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
     window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
     fecharModal();
 }
 
-// Monitora o campo de data para bloquear escolhas específicas imediatamente
+// Bloqueio de datas customizadas
 document.addEventListener("DOMContentLoaded", function() {
     const inputData = document.getElementById('data_entrega');
-    
     if (inputData) {
         inputData.addEventListener('change', function() {
-            // Se o cliente escolher dia 07/03/2026
             if (this.value === '2026-03-07') {
                 alert("⚠️ Data Indisponível, Eu tenho Compromissos o Dia todo!");
-                this.value = ''; // Apaga a data do campo na mesma hora
+                this.value = ''; 
             }
         });
     }
 });
 
 // ==========================================
-// ---> MOTOR DO ESPIÃO (VISUALIZAÇÃO LIMPA) <---
+// ESPIÃO DE DADOS (Renomeado para evitar conflito com o HTML)
 // ==========================================
-async function registrarLog(km, valor, endereco, bairro) {
-    // ⚠️ ALENCAR: NÃO ESQUEÇA DE COLAR A SUA URL DO APPS SCRIPT AQUI DENTRO DAS ASPAS!
-    const urlGAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec"; 
-
-    // 1. Tenta pegar o IP
+async function registrarLogJS(km, valor, endereco, bairro) {
     let ipUsuario = "Desconhecido";
     try {
-        let resIp = await fetch("https://api.ipify.org?format=json");
-        let jsonIp = await resIp.json();
-        ipUsuario = jsonIp.ip;
-    } catch(e) { console.log("IP não capturado"); }
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        let resIp = await fetch("https://api.ipify.org?format=json", { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (resIp.ok) {
+            let jsonIp = await resIp.json();
+            ipUsuario = jsonIp.ip;
+        }
+    } catch(e) { /* Falha silenciosa */ }
 
-    // 2. Limpa e traduz o tipo de aparelho para a planilha
     let textoDispositivo = navigator.userAgent;
     let dispFormatado = "📱 Outro/Desconhecido";
-    if (/android/i.test(textoDispositivo)) {
-        dispFormatado = "📱 Celular Android";
-    } else if (/iPad|iPhone|iPod/.test(textoDispositivo)) {
-        dispFormatado = "🍎 iPhone / iPad";
-    } else if (/windows/i.test(textoDispositivo)) {
-        dispFormatado = "💻 Computador Windows";
-    } else if (/mac/i.test(textoDispositivo)) {
-        dispFormatado = "💻 Computador Mac";
-    }
+    if (/android/i.test(textoDispositivo)) dispFormatado = "📱 Celular Android";
+    else if (/iPad|iPhone|iPod/.test(textoDispositivo)) dispFormatado = "🍎 iPhone / iPad";
+    else if (/windows/i.test(textoDispositivo)) dispFormatado = "💻 Computador Windows";
+    else if (/mac/i.test(textoDispositivo)) dispFormatado = "💻 Computador Mac";
 
-    // 3. Monta o pacote de dados apenas com o necessário
     let pacoteDeDados = {
         data: new Date().toLocaleString("pt-BR"),
         ip: ipUsuario,
-        dispositivo: dispFormatado, // Vai aparecer limpo na planilha
+        dispositivo: dispFormatado, 
         endereco: endereco,
         bairro: bairro,
         km: km,
         valor: valor
     };
 
-    // Envia para o Google Sheets
-    fetch(urlGAS, {
+    fetch(GOOGLE_SCRIPT_URL_LOG, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pacoteDeDados)
-    }).catch(e => console.log("Erro silencioso no log"));
+    }).catch(e => console.warn("Erro silencioso no log"));
 }
