@@ -180,7 +180,7 @@ async function iniciarVerificacao() {
         const timeoutId = setTimeout(() => controller.abort(), 1500); 
         
         const pacote = JSON.stringify({ tipo: "verificar_limite", ip: "0.0.0.0" });
-        const respostaGas = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
+        const respostaGas = await fetch(https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec, { 
             method: "POST", 
             body: pacote,
             signal: controller.signal 
