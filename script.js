@@ -182,6 +182,9 @@ function validacoesIniciais() {
     return true; 
 }
 
+// ==========================================
+// VALIDAÇÃO E GATILHO INICIAL (CORRIGIDO)
+// ==========================================
 async function iniciarVerificacao() {
     const btn = document.getElementById('btn-calcular');
     btn.innerHTML = "⏳ VERIFICANDO...";
@@ -193,13 +196,13 @@ async function iniciarVerificacao() {
     }
 
     try {
-        // Coleta o IP real antes de fazer a verificação de limite
+        // Coleta o IP real
         const ipReal = await obterIpUsuario();
         
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500); 
+        // ⚠️ CORREÇÃO: Aumentado para 6000ms. Com 1500ms ele abortava a segurança e deixava passar.
+        const timeoutId = setTimeout(() => controller.abort(), 6000); 
         
-        // Agora envia o IP real, e não mais o "0.0.0.0"
         const pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipReal });
         const respostaGas = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
             method: "POST", 
@@ -209,20 +212,21 @@ async function iniciarVerificacao() {
         });
         
         clearTimeout(timeoutId);
-        const resultadoTexto = await respostaGas.text();
         
-        if (resultadoTexto.includes('"bloqueado"')) {
-            const modalLimite = document.getElementById('modalLimiteSemanal');
-            if(modalLimite) modalLimite.style.display = 'flex';
-            else mostrarAviso("Limite de 5 consultas semanais atingido para este dispositivo.");
-            
+        // Lê a resposta do servidor do Google
+        const resposta = await respostaGas.json();
+        
+        if (resposta.result === "bloqueado") {
+            // ⚠️ MENSAGEM CUSTOMIZADA E BLOQUEIO IMEDIATO
+            mostrarAviso("Excedeu o limite de acesso semanal. Contacte o Lucas via WhatsApp para calcular o frete e verificar a disponibilidade!");
             liberarBotao();
-            return; 
+            return; // Impede que a função buscarRota() seja chamada
         }
     } catch (e) {
-        console.warn("Verificação ignorada por demora ou erro. Seguindo para o cálculo.");
+        console.warn("Verificação ignorada por demora excessiva ou erro de rede. Seguindo para o cálculo.");
     }
 
+    // Se chegou até aqui (não foi bloqueado), segue o fluxo normal
     validarExpediente();
 }
 
