@@ -16,6 +16,25 @@ let bairroGlobal = "";
 let tempoGlobal = "";
 let timeoutBusca = null;
 
+// Variável global para armazenar o IP temporariamente e não sobrecarregar a API
+let ipGlobalCache = null;
+
+// ==========================================
+// FUNÇÃO DE CAPTURA DE IP REUTILIZÁVEL
+// ==========================================
+async function obterIpUsuario() {
+    if (ipGlobalCache) return ipGlobalCache;
+    try {
+        const respostaIp = await fetch('https://api.ipify.org?format=json');
+        const dadosIp = await respostaIp.json();
+        ipGlobalCache = dadosIp.ip;
+        return ipGlobalCache;
+    } catch (erro) {
+        console.error("⚠️ Falha ao capturar o IP:", erro);
+        return "IP_DESCONHECIDO";
+    }
+}
+
 // ==========================================
 // FUNÇÃO DE AVISOS SEGUROS
 // ==========================================
@@ -139,7 +158,7 @@ async function buscarCep() {
 }
 
 // ==========================================
-// VALIDAÇÃO E GATILHO INICIAL (Sem Travamento)
+// VALIDAÇÃO E GATILHO INICIAL
 // ==========================================
 function liberarBotao(mensagem = "🚀 CALCULAR O FRETE") {
     const btn = document.getElementById('btn-calcular');
@@ -174,14 +193,17 @@ async function iniciarVerificacao() {
     }
 
     try {
-        // Tenta checar o limite no Google Script muito rapidamente (Timeout de 1,5 segundos)
-        // Se a planilha estiver com erro ou demorar, ele aborta e DEIXA o cliente calcular.
+        // Coleta o IP real antes de fazer a verificação de limite
+        const ipReal = await obterIpUsuario();
+        
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 1500); 
         
-        const pacote = JSON.stringify({ tipo: "verificar_limite", ip: "0.0.0.0" });
+        // Agora envia o IP real, e não mais o "0.0.0.0"
+        const pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipReal });
         const respostaGas = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
             method: "POST", 
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: pacote,
             signal: controller.signal 
         });
@@ -192,7 +214,7 @@ async function iniciarVerificacao() {
         if (resultadoTexto.includes('"bloqueado"')) {
             const modalLimite = document.getElementById('modalLimiteSemanal');
             if(modalLimite) modalLimite.style.display = 'flex';
-            else mostrarAviso("Limite de consultas atingido. Fale comigo no WhatsApp.");
+            else mostrarAviso("Limite de 5 consultas semanais atingido para este dispositivo.");
             
             liberarBotao();
             return; 
@@ -201,7 +223,6 @@ async function iniciarVerificacao() {
         console.warn("Verificação ignorada por demora ou erro. Seguindo para o cálculo.");
     }
 
-    // Segue para verificar se está dentro do horário comercial para mostrar o aviso de disponibilidade
     validarExpediente();
 }
 
@@ -210,11 +231,10 @@ function validarExpediente() {
     const horaVal = document.getElementById('hora_entrega').value;
     const d = new Date(dataVal + 'T' + horaVal);
     
-    // Se for entre Segunda(1) e Sexta(5), das 08:00 as 17:00, avisa sobre a disponibilidade.
     if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() <= 17) {
         const modal = document.getElementById('modalExpediente');
         if(modal) modal.style.display = 'flex';
-        else buscarRota(); // Se não achar o modal, calcula direto
+        else buscarRota(); 
     } else { 
         buscarRota(); 
     }
@@ -266,7 +286,6 @@ async function buscarRota() {
     } 
 }
 
-// Quando o mapa encontra a rota com sucesso, ele faz as contas financeiras.
 control.on('routesfound', function(e) {
     const routes = e.routes[0];
     const km = routes.summary.totalDistance / 1000;
@@ -274,8 +293,6 @@ control.on('routesfound', function(e) {
     const tempoMin = Math.round(routes.summary.totalTime / 60) + 5;
     tempoGlobal = tempoMin + " MIN";
     
-    // A MATEMÁTICA: Pega a quilometragem e multiplica por 2 reais. 
-    // O comando Math.max obriga o valorFinal a nunca ser menor que os 10 reais da TAXA_MINIMA.
     const calculoBase = km * VALOR_POR_KM;
     const valorFinal = Math.max(TAXA_MINIMA, calculoBase);
     
@@ -291,7 +308,6 @@ control.on('routesfound', function(e) {
         ? `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})`
         : `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
     
-    // Registra silenciosamente na planilha de controle
     registrarLogJS(km.toFixed(2), valorFormatado, enderecoBuscado, bairroGlobal.toUpperCase());
 
     setTimeout(() => { document.getElementById('campo-resumo').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
@@ -377,32 +393,20 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ==========================================
-// REGISTRO DE DADOS ASSÍNCRONO NO GOOGLE SHEETS E CAPTURA DE IP
+// REGISTRO DE DADOS NO GOOGLE SHEETS
 // ==========================================
 async function registrarLogJS(km, valor, endereco, bairro) {
     let textoDispositivo = navigator.userAgent;
     let dispFormatado = "📱 Outro/Desconhecido";
     
-    // Identificação do Dispositivo
     if (/android/i.test(textoDispositivo)) dispFormatado = "📱 Celular Android";
     else if (/iPad|iPhone|iPod/.test(textoDispositivo)) dispFormatado = "🍎 iPhone / iPad";
     else if (/windows/i.test(textoDispositivo)) dispFormatado = "💻 Computador Windows";
     else if (/mac/i.test(textoDispositivo)) dispFormatado = "💻 Computador Mac";
 
-    // 1. Variável inicial para o IP
-    let ipUsuario = "0.0.0.0";
+    // Chama a função global de IP que ajustamos
+    let ipUsuario = await obterIpUsuario();
 
-    // 2. Captura o IP real do usuário através de uma API pública
-    try {
-        const respostaIp = await fetch('https://api.ipify.org?format=json');
-        const dadosIp = await respostaIp.json();
-        ipUsuario = dadosIp.ip; // Substitui o 0.0.0.0 pelo IP real
-    } catch (erro) {
-        console.error("⚠️ Falha ao capturar o IP:", erro);
-        ipUsuario = "IP_DESCONHECIDO"; // Tratamento de erro silencioso
-    }
-
-    // 3. Monta o pacote de dados
     let pacoteDeDados = { 
         data: new Date().toLocaleString("pt-BR"), 
         ip: ipUsuario, 
@@ -413,11 +417,26 @@ async function registrarLogJS(km, valor, endereco, bairro) {
         valor: valor 
     };
     
-    // 4. Envia os dados para o Google Apps Script
-    fetch(GOOGLE_SCRIPT_URL_LOG, { 
-        method: "POST", 
-        mode: "no-cors", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(pacoteDeDados) 
-    });
+    try {
+        const requisicao = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
+            method: "POST", 
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(pacoteDeDados) 
+        });
+
+        const resposta = await requisicao.json();
+
+        if (resposta.result === "bloqueado") {
+            // Emite aviso visual se for bloqueado na hora de registrar
+            mostrarAviso("⚠️ Seu dispositivo excedeu o limite de 5 cotações nesta semana.");
+            return;
+        }
+
+        if (resposta.result === "sucesso") {
+            console.log("✅ Dados salvos e acesso contabilizado com sucesso!");
+        }
+
+    } catch (erro) {
+        console.error("Erro ao enviar dados: ", erro);
+    }
 }
