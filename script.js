@@ -377,19 +377,35 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ==========================================
-// REGISTRO DE DADOS ASSÍNCRONO NO GOOGLE SHEETS
+// REGISTRO DE DADOS ASSÍNCRONO NO GOOGLE SHEETS E CAPTURA DE IP
 // ==========================================
 async function registrarLogJS(km, valor, endereco, bairro) {
     let textoDispositivo = navigator.userAgent;
     let dispFormatado = "📱 Outro/Desconhecido";
+    
+    // Identificação do Dispositivo
     if (/android/i.test(textoDispositivo)) dispFormatado = "📱 Celular Android";
     else if (/iPad|iPhone|iPod/.test(textoDispositivo)) dispFormatado = "🍎 iPhone / iPad";
     else if (/windows/i.test(textoDispositivo)) dispFormatado = "💻 Computador Windows";
     else if (/mac/i.test(textoDispositivo)) dispFormatado = "💻 Computador Mac";
 
+    // 1. Variável inicial para o IP
+    let ipUsuario = "0.0.0.0";
+
+    // 2. Captura o IP real do usuário através de uma API pública
+    try {
+        const respostaIp = await fetch('https://api.ipify.org?format=json');
+        const dadosIp = await respostaIp.json();
+        ipUsuario = dadosIp.ip; // Substitui o 0.0.0.0 pelo IP real
+    } catch (erro) {
+        console.error("⚠️ Falha ao capturar o IP:", erro);
+        ipUsuario = "IP_DESCONHECIDO"; // Tratamento de erro silencioso
+    }
+
+    // 3. Monta o pacote de dados
     let pacoteDeDados = { 
         data: new Date().toLocaleString("pt-BR"), 
-        ip: "0.0.0.0", 
+        ip: ipUsuario, 
         dispositivo: dispFormatado, 
         endereco: endereco, 
         bairro: bairro, 
@@ -397,6 +413,7 @@ async function registrarLogJS(km, valor, endereco, bairro) {
         valor: valor 
     };
     
+    // 4. Envia os dados para o Google Apps Script
     fetch(GOOGLE_SCRIPT_URL_LOG, { 
         method: "POST", 
         mode: "no-cors", 
